@@ -1,3 +1,4 @@
+setuptools<65
 Flask==2.2.5
 numpy==1.23.5
 pandas==1.5.3
