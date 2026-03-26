@@ -1,72 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Smart Property Predictor</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+<script>
+function runPredict() {
+  goTo(6);
+  const wrap = document.getElementById('resWrap');
 
-<div id="app">
+  // Loader UI (same as your design)
+  wrap.innerHTML = `
+    <div class="loader-anim">
+      <div class="loader-ring">
+        <div class="lr-outer"></div>
+        <div class="lr-inner"></div>
+      </div>
+      <div class="loader-msg">AI is analysing your property…</div>
+    </div>
+  `;
 
-    <!-- Welcome -->
-    <section class="screen active">
-        <h1>🏠 Smart Property Predictor</h1>
-        <button onclick="nextScreen()">Start</button>
-    </section>
+  // 🔥 REAL BACKEND CALL
+  setTimeout(() => {
+    fetch('/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: S.area,
+        sqft: S.sqft,
+        bhk: S.bhk,
+        floor: S.floors
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
 
-    <!-- Location -->
-    <section class="screen">
-        <h2>Select Location</h2>
-        <select id="locationSelect">
-            <option value="1st Phase JP Nagar">1st Phase JP Nagar</option>
-            <option value="Indiranagar">Indiranagar</option>
-            <option value="Whitefield">Whitefield</option>
-        </select>
-        <button onclick="nextScreen()">Next</button>
-    </section>
+      const price = data.price;
+      const lakh = price / 100000;
 
-    <!-- Sqft -->
-    <section class="screen">
-        <h2>Select Sqft</h2>
-        <input type="range" min="500" max="5000" id="sqftRange" oninput="updateSqft()">
-        <p id="sqftValue">500</p>
-        <button onclick="nextScreen()">Next</button>
-    </section>
+      const lo = (lakh * 0.92).toFixed(1);
+      const hi = (lakh * 1.08).toFixed(1);
 
-    <!-- BHK -->
-    <section class="screen">
-        <h2>Select BHK</h2>
-        <div>
-            <button onclick="selectBHK(1)">1 BHK</button>
-            <button onclick="selectBHK(2)">2 BHK</button>
-            <button onclick="selectBHK(3)">3 BHK</button>
-            <button onclick="selectBHK(4)">4 BHK</button>
+      wrap.innerHTML = `
+        <div class="res-card">
+          <div class="res-eyebrow">Estimated Market Value</div>
+          <div class="res-price">₹ ${lakh.toFixed(2)} L</div>
+          <div class="res-range">Range: ₹${lo}L – ₹${hi}L</div>
+
+          <div class="res-sep"></div>
+
+          <div class="res-tags">
+            <div class="res-tag">
+              <div class="res-tag-k">Location</div>
+              <div class="res-tag-v">${S.area}</div>
+            </div>
+            <div class="res-tag">
+              <div class="res-tag-k">Size</div>
+              <div class="res-tag-v">${S.sqft} sqft</div>
+            </div>
+            <div class="res-tag">
+              <div class="res-tag-k">BHK</div>
+              <div class="res-tag-v">${S.bhk}</div>
+            </div>
+          </div>
+
+          <div class="res-actions">
+            <button class="btn-ghost" onclick="resetAll()">Try Again</button>
+          </div>
         </div>
-        <button onclick="nextScreen()">Next</button>
-    </section>
+      `;
 
-    <!-- Floors -->
-    <section class="screen">
-        <h2>Select Floors</h2>
-        <div>
-            <button onclick="selectFloor(1)">1</button>
-            <button onclick="selectFloor(2)">2</button>
-            <button onclick="selectFloor(3)">3</button>
-            <button onclick="selectFloor(4)">4</button>
-        </div>
-        <button onclick="predict()">Predict</button>
-    </section>
+    })
+    .catch(err => {
+      wrap.innerHTML = "<h2 style='color:red'>Error getting prediction</h2>";
+      console.error(err);
+    });
 
-    <!-- Result -->
-    <section class="screen">
-        <h2>💰 Predicted Price</h2>
-        <p id="price">Calculating...</p>
-        <button onclick="restart()">Try Again</button>
-    </section>
-
-</div>
-
-<script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-</html>
+  }, 2000);
+}
+</script>
