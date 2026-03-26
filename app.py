@@ -14,13 +14,16 @@ with open('columns.json', 'r') as f:
     data_columns = json.load(f)['data_columns']
     locations = data_columns[3:]
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
 @app.route('/get_locations')
 def get_locations():
     return jsonify({'locations': sorted(locations)})
+
 
 def predict_price(location, sqft, bhk, bath):
     x = np.zeros(len(data_columns))
@@ -35,6 +38,7 @@ def predict_price(location, sqft, bhk, bath):
 
     return model.predict([x])[0]
 
+
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.get_json()
@@ -47,6 +51,7 @@ def predict():
     price = predict_price(location, sqft, bhk, bath)
 
     return jsonify({"price": round(price, 2)})
+
 
 if __name__ == "__main__":
     app.run(debug=True)
