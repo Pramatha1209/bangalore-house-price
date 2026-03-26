@@ -5,4 +5,4 @@ scikit-learn==1.2.2
 joblib
 gunicorn==20.1.0
 setuptools==65.5.0
-wheel
+wheel==0.38.4
