@@ -3,69 +3,76 @@
 <head>
 <title>Nestiq AI</title>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 body {
   margin:0;
-  font-family:Arial;
-  background:#1a1208;
+  font-family: 'Segoe UI';
+  background: linear-gradient(135deg,#0f0c07,#2a1c0e);
   color:white;
-  text-align:center;
+  overflow:hidden;
 }
 
-/* Screens */
-.screen { display:none; padding:40px; }
-.screen.active { display:block; }
+/* screens */
+.screen {
+  display:none;
+  height:100vh;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  transition:0.5s;
+}
 
-/* Buttons */
+.screen.active {
+  display:flex;
+  animation: slide 0.6s ease;
+}
+
+@keyframes slide {
+  from {opacity:0; transform:translateX(50px);}
+  to {opacity:1; transform:translateX(0);}
+}
+
+/* buttons */
 button {
-  padding:12px 20px;
+  padding:12px 25px;
   margin:10px;
   background:#c4603a;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   color:white;
   cursor:pointer;
 }
 
-/* Search */
-#searchBox {
+/* map grid */
+.map {
+  display:grid;
+  grid-template-columns:repeat(3,120px);
+  gap:15px;
+}
+
+.zone {
+  background:#2d1f0e;
+  padding:20px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.zone:hover {
+  background:#c4603a;
+}
+
+/* input */
+input {
   padding:10px;
-  width:80%;
-  max-width:400px;
-  border-radius:6px;
   border:none;
-}
-
-/* Results */
-.result {
-  background:#2d1f0e;
-  padding:10px;
-  margin:5px;
   border-radius:6px;
-  cursor:pointer;
 }
 
-.result:hover {
-  background:#c4603a;
-}
-
-/* Map blocks */
-.area {
-  display:inline-block;
-  padding:15px;
-  margin:8px;
-  background:#2d1f0e;
-  border-radius:8px;
-  cursor:pointer;
-}
-
-.area:hover {
-  background:#c4603a;
-}
-
+/* result */
 #price {
-  font-size:30px;
-  margin-top:20px;
+  font-size:40px;
   color:#e8d5a3;
 }
 </style>
@@ -73,33 +80,27 @@ button {
 
 <body>
 
-<!-- SCREEN 1 -->
+<!-- Screen 1 -->
 <div class="screen active" id="s1">
   <h1>Nestiq AI</h1>
+  <p>Smart Property Valuation</p>
   <button onclick="next()">Start</button>
 </div>
 
-<!-- SCREEN 2 (SEARCH + MAP) -->
+<!-- Screen 2 -->
 <div class="screen" id="s2">
-  <h2>Select Location</h2>
-
-  <input id="searchBox" placeholder="Search location..." oninput="searchLocation()">
-
-  <div id="results"></div>
-
-  <h3>Popular Areas</h3>
-  <div id="map"></div>
-
+  <h2>Select Area</h2>
+  <div class="map" id="map"></div>
   <button onclick="next()">Next</button>
 </div>
 
-<!-- SCREEN 3 -->
+<!-- Screen 3 -->
 <div class="screen" id="s3">
-  <input id="sqft" placeholder="Sqft">
+  <input id="sqft" placeholder="Enter Sqft">
   <button onclick="next()">Next</button>
 </div>
 
-<!-- SCREEN 4 -->
+<!-- Screen 4 -->
 <div class="screen" id="s4">
   <button onclick="S.bhk=1">1 BHK</button>
   <button onclick="S.bhk=2">2 BHK</button>
@@ -108,18 +109,18 @@ button {
   <button onclick="next()">Next</button>
 </div>
 
-<!-- SCREEN 5 -->
+<!-- Screen 5 -->
 <div class="screen" id="s5">
   <button onclick="S.floor=1">1 Floor</button>
   <button onclick="S.floor=2">2 Floors</button>
-  <button onclick="S.floor=3">3 Floors</button>
-  <button onclick="S.floor=4">4 Floors</button>
   <button onclick="predict()">Predict</button>
 </div>
 
-<!-- RESULT -->
+<!-- Result -->
 <div class="screen" id="s6">
-  <h2 id="price"></h2>
+  <h2>Predicted Price</h2>
+  <div id="price">...</div>
+  <canvas id="chart" width="300"></canvas>
 </div>
 
 <script>
@@ -130,66 +131,38 @@ let current = 0;
 let S = {location:"", sqft:1000, bhk:2, floor:1};
 let allLocations = [];
 
-/* Navigation */
+/* navigation */
 function next(){
   screens[current].classList.remove("active");
   current++;
   screens[current].classList.add("active");
 }
 
-/* Load locations */
+/* load locations */
 async function loadLocations(){
   let res = await fetch('/get_locations');
   let data = await res.json();
   allLocations = data.locations;
 
-  showPopular();
+  createMap();
 }
 
 loadLocations();
 
-/* Search */
-function searchLocation(){
-  let input = document.getElementById("searchBox").value.toLowerCase();
-  let results = document.getElementById("results");
-  results.innerHTML = "";
-
-  if(input.length < 2) return;
-
-  let filtered = allLocations.filter(loc =>
-    loc.toLowerCase().includes(input)
-  ).slice(0,10);
-
-  filtered.forEach(loc=>{
-    let div = document.createElement("div");
-    div.className = "result";
-    div.innerText = loc;
-    div.onclick = () => {
-      S.location = loc;
-      document.getElementById("searchBox").value = loc;
-      results.innerHTML = "";
-    };
-    results.appendChild(div);
-  });
-}
-
-/* Map style (popular) */
-function showPopular(){
+/* create map grid */
+function createMap(){
   let map = document.getElementById("map");
 
-  allLocations.slice(0,12).forEach(loc=>{
+  allLocations.slice(0,9).forEach(loc=>{
     let div = document.createElement("div");
-    div.className = "area";
+    div.className = "zone";
     div.innerText = loc;
-    div.onclick = () => {
-      S.location = loc;
-      document.getElementById("searchBox").value = loc;
-    };
+    div.onclick = () => S.location = loc;
     map.appendChild(div);
   });
 }
 
-/* Prediction */
+/* predict */
 function predict(){
   next();
 
@@ -202,8 +175,39 @@ function predict(){
   })
   .then(res=>res.json())
   .then(data=>{
+    animatePrice(data.price);
+    showChart(data.price);
+  });
+}
+
+/* animate price */
+function animatePrice(price){
+  let count = 0;
+  let interval = setInterval(()=>{
+    count += price/30;
+    if(count>=price){
+      count = price;
+      clearInterval(interval);
+    }
     document.getElementById("price").innerText =
-      "₹ " + data.price;
+      "₹ " + Math.round(count);
+  },50);
+}
+
+/* chart */
+function showChart(price){
+  let ctx = document.getElementById("chart");
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Low','Mid','High'],
+      datasets: [{
+        label: 'Price Range',
+        data: [price*0.9, price, price*1.1],
+        borderWidth: 2
+      }]
+    }
   });
 }
 
