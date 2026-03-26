@@ -32,9 +32,9 @@ def predict_price(location, sqft, bhk, bath):
     x[1] = bath
     x[2] = bhk
 
-    if location in data_columns:
-        loc_index = data_columns.index(location)
-        x[loc_index] = 1
+    if location.lower() in data_columns:
+    loc_index = data_columns.index(location.lower())
+    x[loc_index] = 1
 
     return model.predict([x])[0]
 
@@ -43,7 +43,7 @@ def predict_price(location, sqft, bhk, bath):
 def predict():
     data = request.get_json()
 
-    location = data['location']
+    location = data['location'].lower()
     sqft = float(data['sqft'])
     bhk = int(data['bhk'])
     bath = int(data['floor'])
