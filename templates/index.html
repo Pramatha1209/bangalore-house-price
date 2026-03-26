@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Nestiq Property Predictor</title>
+<title>Nestiq AI</title>
 
 <style>
 body {
   margin:0;
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg,#1a1208,#2d1f0e);
+  font-family:'Segoe UI';
+  background:#0e0c06;
   color:white;
   overflow:hidden;
 }
@@ -19,47 +18,27 @@ body {
   justify-content:center;
   align-items:center;
   flex-direction:column;
-  text-align:center;
 }
 
-.screen.active {
-  display:flex;
-  animation: fade 0.5s ease;
-}
+.screen.active { display:flex; }
 
-@keyframes fade {
-  from {opacity:0; transform:translateY(20px);}
-  to {opacity:1; transform:translateY(0);}
+h1 {
+  font-size:60px;
+  letter-spacing:2px;
 }
 
 button {
-  padding:12px 24px;
-  margin:10px;
+  padding:12px 28px;
   background:#c4603a;
   border:none;
   border-radius:8px;
   color:white;
   cursor:pointer;
-  transition:0.3s;
-}
-
-button:hover {
-  transform:scale(1.05);
-}
-
-input, select {
-  padding:10px;
   margin:10px;
-  border-radius:6px;
-  border:none;
 }
-
-h1 { font-size:40px; }
-h2 { font-weight:300; }
 
 #price {
-  font-size:40px;
-  margin-top:20px;
+  font-size:45px;
   color:#e8d5a3;
 }
 </style>
@@ -67,49 +46,37 @@ h2 { font-weight:300; }
 
 <body>
 
-<div id="app">
-
-<!-- SCREEN 1 -->
-<div class="screen active">
-  <h1>🏠 Nestiq</h1>
-  <h2>AI Property Valuation</h2>
+<div class="screen active" id="s1">
+  <h1>Nestiq</h1>
+  <p>AI Powered Property Valuation</p>
   <button onclick="next()">Start</button>
 </div>
 
-<!-- SCREEN 2 -->
-<div class="screen">
+<div class="screen" id="s2">
   <h2>Select Location</h2>
-  <select id="location">
-    <option>Whitefield</option>
-    <option>Indiranagar</option>
-    <option>Electronic City</option>
-    <option>HSR Layout</option>
-  </select>
+  <select id="location"></select>
   <button onclick="next()">Next</button>
 </div>
 
-<!-- SCREEN 3 -->
-<div class="screen">
+<div class="screen" id="s3">
   <h2>Enter Sqft</h2>
-  <input type="number" id="sqft" placeholder="Sqft">
+  <input type="number" id="sqft">
   <button onclick="next()">Next</button>
 </div>
 
-<!-- SCREEN 4 -->
-<div class="screen">
-  <h2>Select BHK</h2>
+<div class="screen" id="s4">
+  <h2>BHK</h2>
   <select id="bhk">
-    <option value="1">1 BHK</option>
-    <option value="2">2 BHK</option>
-    <option value="3">3 BHK</option>
-    <option value="4">4 BHK</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
   </select>
   <button onclick="next()">Next</button>
 </div>
 
-<!-- SCREEN 5 -->
-<div class="screen">
-  <h2>Select Floors</h2>
+<div class="screen" id="s5">
+  <h2>Floors</h2>
   <select id="floor">
     <option value="1">1</option>
     <option value="2">2</option>
@@ -119,13 +86,11 @@ h2 { font-weight:300; }
   <button onclick="predict()">Predict</button>
 </div>
 
-<!-- RESULT -->
-<div class="screen">
+<div class="screen" id="s6">
   <h2>Predicted Price</h2>
-  <div id="price">Calculating...</div>
+  <div id="price">...</div>
+  <div id="details"></div>
   <button onclick="restart()">Restart</button>
-</div>
-
 </div>
 
 <script>
@@ -143,11 +108,23 @@ function restart(){
   location.reload();
 }
 
+async function loadLocations(){
+  let res = await fetch('/get_locations');
+  let data = await res.json();
+
+  let select = document.getElementById("location");
+  data.locations.slice(0,20).forEach(loc=>{
+    let opt = document.createElement("option");
+    opt.text = loc;
+    select.add(opt);
+  });
+}
+
+loadLocations();
+
 function predict(){
 
   next();
-
-  document.getElementById("price").innerText = "AI is thinking...";
 
   let location = document.getElementById("location").value;
   let sqft = parseFloat(document.getElementById("sqft").value);
@@ -158,32 +135,26 @@ function predict(){
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      location: location,
-      sqft: sqft,
-      bhk: bhk,
-      floor: floor
+      location, sqft, bhk, floor
     })
   })
   .then(res=>res.json())
   .then(data=>{
-    animatePrice(data.price);
-  });
-}
 
-function animatePrice(finalPrice){
-  let count = 0;
-  let interval = setInterval(()=>{
-    count += finalPrice / 30;
-    if(count >= finalPrice){
-      count = finalPrice;
-      clearInterval(interval);
-    }
+    let price = data.price;
+    let lakh = price / 100000;
+
     document.getElementById("price").innerText =
-      "₹ " + Math.round(count);
-  },50);
+      "₹ " + lakh.toFixed(2) + " L";
+
+    document.getElementById("details").innerHTML =
+      `📍 ${location} | ${sqft} sqft | ${bhk} BHK`;
+
+  });
 }
 
 </script>
 
 </body>
+</html>
 </html>s
