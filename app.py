@@ -11,7 +11,8 @@ with open('bangalore_house_price_model.pkl', 'rb') as f:
 
 # Load columns
 with open('columns.json', 'r') as f:
-    data_columns = json.load(f)['data_columns']
+    data = json.load(f)
+    data_columns = [col.lower() for col in data['data_columns']]
     locations = data_columns[3:]
 
 
@@ -32,9 +33,11 @@ def predict_price(location, sqft, bhk, bath):
     x[1] = bath
     x[2] = bhk
 
-    if location.lower() in data_columns:
-    loc_index = data_columns.index(location.lower())
-    x[loc_index] = 1
+    location = location.lower()
+
+    if location in data_columns:
+        loc_index = data_columns.index(location)
+        x[loc_index] = 1
 
     return model.predict([x])[0]
 
@@ -43,10 +46,12 @@ def predict_price(location, sqft, bhk, bath):
 def predict():
     data = request.get_json()
 
-    location = data['location'].lower()
-    sqft = float(data['sqft'])
-    bhk = int(data['bhk'])
-    bath = int(data['floor'])
+    location = data.get('location', '').lower()
+    sqft = float(data.get('sqft', 0))
+    bhk = int(data.get('bhk', 0))
+    bath = int(data.get('floor', 0))
+
+    print("DEBUG:", location, sqft, bhk, bath)  # 🔥 important debug
 
     price = predict_price(location, sqft, bhk, bath)
 
