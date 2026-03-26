@@ -20,8 +20,16 @@ def index():
 def get_locations():
     return jsonify({'locations': sorted(locations)})
 
-@app.route('/predict', methods=['POST'])
-def predict():
+data = request.get_json()
+
+location = data['location']
+sqft = float(data['sqft'])
+bhk = int(data['bhk'])
+bath = int(data['floor'])
+
+price = predict_price(location, sqft, bhk, bath)
+
+return jsonify({"price": round(price, 2)})
     data = request.get_json()
     total_sqft = float(data['total_sqft'])
     bhk        = int(data['bhk'])

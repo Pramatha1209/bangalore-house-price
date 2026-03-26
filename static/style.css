@@ -1,0 +1,35 @@
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg, #1e1e2f, #3a3a5a);
+    color: white;
+    text-align: center;
+}
+
+.screen {
+    display: none;
+    padding: 50px;
+}
+
+.screen.active {
+    display: block;
+    animation: fade 0.5s ease;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    background: #00c9a7;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.cards button {
+    margin: 5px;
+}
+
+@keyframes fade {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
