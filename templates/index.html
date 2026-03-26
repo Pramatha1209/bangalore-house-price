@@ -1,217 +1,1641 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Nestiq AI</title>
+  <title>Nestiq AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
-<style>
-body {
-  margin:0;
-  font-family: 'Segoe UI';
-  background: linear-gradient(135deg,#0f0c07,#2a1c0e);
-  color:white;
-  overflow:hidden;
-}
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: #0f0c07;
+      color: white;
+      overflow: hidden;
+    }
 
-/* screens */
-.screen {
-  display:none;
-  height:100vh;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  transition:0.5s;
-}
+    /* Base Screens */
+    .screen {
+      display: none;
+      height: 100vh;
+      width: 100vw;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      transition: 0.5s;
+      position: relative;
+    }
 
-.screen.active {
-  display:flex;
-  animation: slide 0.6s ease;
-}
+    .screen.active {
+      display: flex;
+      animation: fade 0.8s ease forwards;
+    }
 
-@keyframes slide {
-  from {opacity:0; transform:translateX(50px);}
-  to {opacity:1; transform:translateX(0);}
-}
+    @keyframes fade {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
 
-/* buttons */
-button {
-  padding:12px 25px;
-  margin:10px;
-  background:#c4603a;
-  border:none;
-  border-radius:10px;
-  color:white;
-  cursor:pointer;
-}
+      to {
+        opacity: 1;
+      }
+    }
 
-/* map grid */
-.map {
-  display:grid;
-  grid-template-columns:repeat(3,120px);
-  gap:15px;
-}
+    /* HERO SECTION CSS */
+    .hero-screen {
+      animation: doorOpen 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+    }
 
-.zone {
-  background:#2d1f0e;
-  padding:20px;
-  border-radius:10px;
-  cursor:pointer;
-}
+    @keyframes doorOpen {
+      from {
+        opacity: 0;
+        transform: scale(1.1) translateY(20px);
+        filter: brightness(0.5);
+      }
 
-.zone:hover {
-  background:#c4603a;
-}
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: brightness(1);
+      }
+    }
 
-/* input */
-input {
-  padding:10px;
-  border:none;
-  border-radius:6px;
-}
+    .cinematic-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('/static/hero_bg.png') no-repeat center center/cover;
+      z-index: -2;
+      animation: slowZoom 20s ease-in-out infinite alternate;
+    }
 
-/* result */
-#price {
-  font-size:40px;
-  color:#e8d5a3;
-}
-</style>
+    @keyframes slowZoom {
+      from {
+        transform: scale(1);
+      }
+
+      to {
+        transform: scale(1.05);
+      }
+    }
+
+    .hero-particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        radial-gradient(circle, rgba(255, 230, 150, 0.02) 2px, transparent 2px);
+      background-size: 100px 100px, 150px 150px;
+      background-position: 0 0, 50px 50px;
+      z-index: -1;
+      animation: particleFloat 30s linear infinite;
+      opacity: 0.8;
+    }
+
+    @keyframes particleFloat {
+      0% {
+        transform: translateY(0);
+      }
+
+      100% {
+        transform: translateY(-150px);
+      }
+    }
+
+    .glass-panel {
+      background: rgba(20, 15, 10, 0.45);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 50px 60px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      max-width: 600px;
+      animation: panelFloat 5s ease-in-out infinite alternate;
+      transform-style: preserve-3d;
+      z-index: 2;
+    }
+
+    @keyframes panelFloat {
+      from {
+        transform: translateY(0px);
+      }
+
+      to {
+        transform: translateY(-10px);
+      }
+    }
+
+    .hero-title {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      margin-top: 0;
+      text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+      background: linear-gradient(90deg, #FDE68A, #F59E0B, #D97706);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      line-height: 1.2;
+    }
+
+    .hero-subtext {
+      font-size: 18px;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 35px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: #fff;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+      font-family: inherit;
+      margin: 0;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 12px 35px rgba(245, 158, 11, 0.6);
+      background: linear-gradient(135deg, #FBBF24, #F59E0B);
+    }
+
+    .secondary-btn {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      padding: 14px 32px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+      font-family: inherit;
+      margin: 0;
+    }
+
+    .secondary-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .floor-reflection {
+      position: absolute;
+      bottom: -40vh;
+      left: 0;
+      right: 0;
+      height: 50vh;
+      background: radial-gradient(ellipse at top, rgba(245, 158, 11, 0.1), transparent 70%);
+      pointer-events: none;
+      filter: blur(20px);
+      z-index: 1;
+    }
+
+    @media (max-width: 600px) {
+      .hero-title {
+        font-size: 36px;
+      }
+
+      .glass-panel {
+        padding: 30px 20px;
+        width: 80%;
+      }
+
+      .cta-group {
+        flex-direction: column;
+      }
+    }
+
+    /* buttons */
+    button {
+      padding: 12px 28px;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* different colors */
+    .next1 {
+      background: #c4603a;
+    }
+
+    .next2 {
+      background: #3a86ff;
+    }
+
+    .next3 {
+      background: #8338ec;
+    }
+
+    .next4 {
+      background: #ff006e;
+    }
+
+    .next5 {
+      background: #06d6a0;
+    }
+
+    /* MAP SCREEN CSS */
+    .map-screen {
+      position: relative;
+      padding: 0;
+    }
+
+    .map-overlay-top {
+      position: absolute;
+      top: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    .glass-panel-sm {
+      background: rgba(20, 15, 10, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .search-container {
+      padding: 10px 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #location-search {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 18px;
+      font-family: inherit;
+      outline: none;
+      width: 100%;
+    }
+
+    .autocomplete-list {
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+      margin-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 10px;
+    }
+
+    .autocomplete-list div {
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: 0.2s;
+    }
+
+    .autocomplete-list div:hover {
+      background: rgba(245, 158, 11, 0.2);
+    }
+
+    .map-overlay-toggles {
+      position: absolute;
+      top: 40px;
+      right: 40px;
+      z-index: 1000;
+      display: flex;
+      padding: 5px;
+      gap: 5px;
+    }
+
+    .toggle-btn {
+      background: transparent;
+      border: none;
+      color: #ccc;
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-family: inherit;
+      font-weight: 600;
+    }
+
+    .toggle-btn.active {
+      background: rgba(245, 158, 11, 0.3);
+      color: #FBBF24;
+    }
+
+    .side-panel {
+      position: absolute;
+      right: -400px;
+      top: 120px;
+      width: 320px;
+      z-index: 1000;
+      transition: 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+      padding: 30px;
+    }
+
+    .side-panel.open {
+      right: 40px;
+    }
+
+    .glass-panel-md {
+      background: rgba(20, 15, 10, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: 25px 0;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 12px;
+      color: #aaa;
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      display: block;
+      font-size: 18px;
+      font-weight: 700;
+      color: #FDE68A;
+    }
+
+    .full-width {
+      width: 100%;
+      margin: 0;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Custom Marker */
+    .custom-marker {
+      background: #F59E0B;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #F59E0B;
+      transition: 0.3s;
+    }
+
+    .custom-marker.selected-marker {
+      background: #ff006e;
+      box-shadow: 0 0 20px #ff006e;
+      transform: scale(1.5);
+      animation: pulseMarker 1.5s infinite alternate;
+    }
+
+    @keyframes pulseMarker {
+      from {
+        box-shadow: 0 0 10px #ff006e;
+      }
+
+      to {
+        box-shadow: 0 0 25px #ff006e, 0 0 40px #ff006e;
+      }
+    }
+
+    .glass-tooltip {
+      background: rgba(20, 15, 10, 0.85) !important;
+      color: #fff !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: 8px !important;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5) !important;
+      backdrop-filter: blur(10px);
+    }
+
+    .glass-tooltip.leaflet-tooltip-top:before {
+      border-top-color: rgba(20, 15, 10, 0.85) !important;
+    }
+
+    @media (max-width: 600px) {
+      .side-panel {
+        right: 0;
+        bottom: -400px;
+        top: auto;
+        width: 100%;
+        border-radius: 20px 20px 0 0;
+      }
+
+      .side-panel.open {
+        bottom: 0;
+        right: 0;
+      }
+
+      .map-overlay-toggles {
+        top: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+        padding-top: 10px;
+      }
+
+      .map-overlay-toggles .toggle-btn {
+        font-size: 12px;
+        padding: 6px 10px;
+      }
+    }
+
+    /* SQFT SCREEN CSS */
+    .sqft-screen {
+      background: radial-gradient(circle at center, #1a150f, #0f0c07);
+    }
+
+    .sqft-header {
+      position: absolute;
+      top: 40px;
+      text-align: center;
+    }
+
+    .sqft-header h2 {
+      font-size: 32px;
+      margin: 0;
+      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .subtitle {
+      color: #aaa;
+      font-size: 16px;
+      font-weight: 300;
+      margin-top: 5px;
+    }
+
+    .cube-container {
+      position: absolute;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      perspective: 1500px;
+    }
+
+    .isometric-cube {
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(-30deg) rotateY(-45deg);
+      width: var(--cw, 120px);
+      height: var(--ch, 60px);
+      transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .cube-face {
+      position: absolute;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.15);
+      backdrop-filter: blur(8px);
+    }
+
+    /* TOP FACE */
+    .cube-face.top {
+      width: var(--cw, 120px);
+      height: var(--cd, 80px);
+      transform: rotateX(90deg) translateZ(calc(var(--ch, 60px) / 2));
+      top: calc(50% - var(--cd, 80px) / 2);
+      background: rgba(253, 230, 138, 0.2);
+      background-image:
+        linear-gradient(rgba(245, 158, 11, 0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245, 158, 11, 0.3) 1px, transparent 1px);
+      background-size: 30px 30px;
+      transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* FRONT FACE */
+    .cube-face.front {
+      width: var(--cw, 120px);
+      height: var(--ch, 60px);
+      transform: rotateY(0deg) translateZ(calc(var(--cd, 80px) / 2));
+      background: rgba(245, 158, 11, 0.25);
+      top: 0;
+      transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* RIGHT FACE */
+    .cube-face.right {
+      width: var(--cd, 80px);
+      height: var(--ch, 60px);
+      transform: rotateY(90deg) translateZ(calc(var(--cw, 120px) / 2));
+      background: rgba(217, 119, 6, 0.35);
+      left: calc(50% - var(--cd, 80px) / 2);
+      top: 0;
+      transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .cube-shadow {
+      position: absolute;
+      width: var(--cw, 120px);
+      height: var(--cd, 80px);
+      background: rgba(245, 158, 11, 0.6);
+      transform: rotateX(90deg) translateZ(calc(var(--ch, 60px) / -2 - 40px));
+      top: calc(50% - var(--cd, 80px) / 2);
+      filter: blur(40px);
+      transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .sqft-dashboard {
+      position: absolute;
+      bottom: 120px;
+      width: 90%;
+      max-width: 600px;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .sqft-value {
+      font-size: 64px;
+      font-weight: 700;
+      margin: 0;
+      background: linear-gradient(90deg, #FDE68A, #F59E0B);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .sqft-unit {
+      font-size: 24px;
+      font-weight: 400;
+    }
+
+    .sqft-hint {
+      color: #FDE68A;
+      font-size: 16px;
+      margin-top: 5px;
+      margin-bottom: 30px;
+    }
+
+    .slider-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    #sqft-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 12px;
+      background: linear-gradient(90deg, #F59E0B 15.55%, rgba(255, 255, 255, 0.1) 15.55%);
+      border-radius: 10px;
+      outline: none;
+    }
+
+    #sqft-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #F59E0B;
+      cursor: pointer;
+      box-shadow: 0 0 20px #F59E0B;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #sqft-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.3);
+      box-shadow: 0 0 30px #F59E0B;
+    }
+
+    .snap-marks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      color: #888;
+      font-size: 14px;
+      padding: 0 5%;
+    }
+
+    .snap-marks span {
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .snap-marks span:hover {
+      color: #F59E0B;
+    }
+
+    .preset-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    .preset-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ccc;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .preset-btn:hover,
+    .preset-btn.active {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: #F59E0B;
+      color: #fff;
+    }
+
+    .bottom-cta {
+      position: absolute;
+      bottom: 40px;
+    }
+
+    /* LAYOUT BUILDER CSS */
+    .layout-screen {
+      background: radial-gradient(circle at bottom, #1a150f, #0f0c07);
+    }
+
+    .layout-header {
+      position: absolute;
+      top: 40px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .layout-header h2 {
+      font-size: 32px;
+      margin: 0;
+      background: linear-gradient(90deg, #FDE68A, #F59E0B);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .bhk-cards-container {
+      display: flex;
+      gap: 15px;
+      margin-top: 100px;
+      z-index: 10;
+      transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .bhk-cards-container.minimized {
+      transform: scale(0.7) translateY(-220px);
+    }
+
+    .bhk-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      padding: 20px 25px;
+      border-radius: 16px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      text-align: center;
+    }
+
+    .bhk-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(245, 158, 11, 0.3);
+      background: rgba(245, 158, 11, 0.15);
+      border-color: #F59E0B;
+    }
+
+    .bhk-card.active-card {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(245, 158, 11, 0.5);
+      background: rgba(245, 158, 11, 0.25);
+      border-color: #FDE68A;
+    }
+
+    .bhk-icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .bhk-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #FDE68A;
+    }
+
+    .blueprint-container {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: 80%;
+      max-width: 600px;
+      height: 350px;
+      background: rgba(10, 25, 40, 0.5);
+      border: 2px solid rgba(59, 130, 246, 0.3);
+      border-radius: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+      overflow: hidden;
+      box-shadow: 0 0 50px rgba(59, 130, 246, 0.15) inset;
+    }
+
+    .blueprint-container.visible {
+      opacity: 1;
+      transform: translate(-50%, -45%) scale(1);
+      pointer-events: auto;
+    }
+
+    .blueprint-container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image:
+        linear-gradient(rgba(59, 130, 246, 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.2) 1px, transparent 1px);
+      background-size: 20px 20px;
+      z-index: 0;
+    }
+
+    .blueprint-grid {
+      display: grid;
+      width: 100%;
+      height: 100%;
+      gap: 4px;
+      padding: 10px;
+      box-sizing: border-box;
+      position: relative;
+      z-index: 1;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: 1fr;
+    }
+
+    .bp-room {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.6);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #93C5FD;
+      font-family: monospace;
+      font-size: 14px;
+      letter-spacing: 1px;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bp-room.hall {
+      grid-column: span 2;
+      grid-row: span 2;
+    }
+
+    .bp-room.kitchen {
+      grid-column: span 1;
+      grid-row: span 1;
+    }
+
+    .bp-room.bed {
+      grid-column: span 1;
+      grid-row: span 2;
+    }
+
+    .bp-room.bath {
+      grid-column: span 1;
+      grid-row: span 1;
+      background: rgba(245, 158, 11, 0.2);
+      border-color: #F59E0B;
+      color: #FDE68A;
+      animation: popIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    @keyframes popIn {
+      0% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .blueprint-glow-sweep {
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(253, 230, 138, 0.3), transparent);
+      transform: skewX(-20deg);
+      z-index: 2;
+    }
+
+    .blueprint-container.visible .blueprint-glow-sweep {
+      animation: sweep 1.5s ease-in-out 0.2s;
+    }
+
+    @keyframes sweep {
+      0% {
+        left: -100%;
+      }
+
+      100% {
+        left: 200%;
+      }
+    }
+
+    .bath-dashboard {
+      position: absolute;
+      bottom: 30px;
+      width: 90%;
+      max-width: 400px;
+      padding: 20px 30px;
+      text-align: center;
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+      animation: fade 0.5s ease forwards;
+    }
+
+    .bath-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .bath-controls h3 {
+      margin: 0;
+      font-size: 20px;
+      color: #FDE68A;
+    }
+
+    .counter {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .circle-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 24px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+      padding: 0;
+    }
+
+    .circle-btn:hover {
+      background: #F59E0B;
+      border-color: #F59E0B;
+      box-shadow: 0 0 15px #F59E0B;
+    }
+
+    .bath-hint {
+      font-size: 14px;
+      color: #aaa;
+      margin: 0;
+      min-height: 20px;
+    }
+
+    .bath-hint.warning {
+      color: #EF4444;
+      text-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+    }
+
+    @media (max-width: 600px) {
+      .bhk-cards-container {
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 60px;
+      }
+
+      .blueprint-container {
+        width: 95%;
+        max-height: 300px;
+      }
+    }
+
+    /* RESULT DASHBOARD CSS */
+    .result-screen {
+      background: radial-gradient(circle at top, #1a150f, #0f0c07);
+    }
+
+    .dashboard-panel {
+      width: 90%;
+      max-width: 600px;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      animation: slideUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .result-header {
+      text-align: center;
+    }
+
+    .ai-badge {
+      display: inline-block;
+      background: rgba(16, 185, 129, 0.2);
+      color: #34D399;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      margin-bottom: 15px;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+    }
+
+    .result-header h2 {
+      font-size: 24px;
+      margin: 0;
+      color: #ccc;
+    }
+
+    .price-container {
+      text-align: center;
+      padding: 20px 0;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.15), transparent);
+      border-radius: 16px;
+      border: 1px solid rgba(245, 158, 11, 0.1);
+    }
+
+    .final-price {
+      font-size: 64px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #FDE68A, #F59E0B, #D97706);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+      line-height: 1;
+    }
+
+    .confidence-meter {
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    .meter-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+
+    .meter-value {
+      color: #10B981;
+      font-weight: 700;
+    }
+
+    .meter-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .meter-fill {
+      width: 94%;
+      height: 100%;
+      background: linear-gradient(90deg, #34D399, #10B981);
+      border-radius: 10px;
+      box-shadow: 0 0 10px #10B981;
+      animation: fillBar 1.5s ease-out;
+    }
+
+    @keyframes fillBar {
+      from {
+        width: 0%;
+      }
+
+      to {
+        width: 94%;
+      }
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .sm-label {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .sm-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #FDE68A;
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 140px;
+      padding: 10px 0;
+    }
+
+    .restart-btn {
+      margin-top: 10px;
+      font-size: 18px;
+      padding: 18px;
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- Screen 1 -->
-<div class="screen active" id="s1">
-  <h1>Nestiq AI</h1>
-  <p>Smart Property Valuation</p>
-  <button onclick="next()">Start</button>
-</div>
+  <!-- HERO -->
+  <div class="screen active hero-screen">
+    <div class="cinematic-bg"></div>
+    <div class="hero-particles"></div>
+    <div class="glass-panel" id="hero-panel">
+      <h1 class="hero-title">Welcome to Your Dream Home Journey</h1>
+      <p class="hero-subtext">Design, explore, and build your perfect living space effortlessly.</p>
+      <div class="cta-group">
+        <button class="primary-btn" onclick="next()">Get Started</button>
+        <button class="secondary-btn">Explore Designs</button>
+      </div>
+    </div>
+    <div class="floor-reflection"></div>
+  </div>
 
-<!-- Screen 2 -->
-<div class="screen" id="s2">
-  <h2>Select Area</h2>
-  <div class="map" id="map"></div>
-  <button onclick="next()">Next</button>
-</div>
+  <!-- MAP -->
+  <div class="screen map-screen" id="map-step">
+    <div id="map" style="width:100%; height:100%; position:absolute; top:0; left:0; z-index:0;"></div>
 
-<!-- Screen 3 -->
-<div class="screen" id="s3">
-  <input id="sqft" placeholder="Enter Sqft">
-  <button onclick="next()">Next</button>
-</div>
+    <div class="map-overlay-top">
+      <div class="search-container glass-panel-sm">
+        <input type="text" id="location-search" placeholder="Search your preferred location..." autocomplete="off">
+        <div id="autocomplete-results" class="autocomplete-list"></div>
+      </div>
+    </div>
 
-<!-- Screen 4 -->
-<div class="screen" id="s4">
-  <button onclick="S.bhk=1">1 BHK</button>
-  <button onclick="S.bhk=2">2 BHK</button>
-  <button onclick="S.bhk=3">3 BHK</button>
-  <button onclick="S.bhk=4">4 BHK</button>
-  <button onclick="next()">Next</button>
-</div>
+    <div class="map-overlay-toggles glass-panel-sm">
+      <button id="toggle-price" class="toggle-btn active" onclick="setHeatmap('price')">🔥 Price</button>
+      <button id="toggle-demand" class="toggle-btn" onclick="setHeatmap('demand')">⚡ Demand</button>
+    </div>
 
-<!-- Screen 5 -->
-<div class="screen" id="s5">
-  <button onclick="S.floor=1">1 Floor</button>
-  <button onclick="S.floor=2">2 Floors</button>
-  <button onclick="predict()">Predict</button>
-</div>
+    <div class="side-panel glass-panel-md" id="location-panel">
+      <h3 id="panel-title" style="margin-top:0;">Select Location</h3>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-label">Avg Base Price</span>
+          <span class="stat-value" id="panel-price">--</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Demand Intensity</span>
+          <span class="stat-value" id="panel-demand">--</span>
+        </div>
+      </div>
+      <button class="primary-btn full-width" onclick="confirmLocation()" id="confirm-loc-btn" disabled>Continue
+        Location</button>
+    </div>
+  </div>
 
-<!-- Result -->
-<div class="screen" id="s6">
-  <h2>Predicted Price</h2>
-  <div id="price">...</div>
-  <canvas id="chart" width="300"></canvas>
-</div>
+  <!-- SQFT -->
+  <div class="screen sqft-screen" id="sqft-step">
+    <div class="sqft-header">
+      <h2>Adjust House Volume</h2>
+      <p class="subtitle" id="sqft-subtitle">Drag sideways to scale your space</p>
+    </div>
 
-<script>
+    <div class="cube-container">
+      <div class="isometric-cube" id="home-cube">
+        <div class="cube-face top"></div>
+        <div class="cube-face front"></div>
+        <div class="cube-face right"></div>
+        <div class="cube-shadow"></div>
+      </div>
+    </div>
 
-let screens = document.querySelectorAll(".screen");
-let current = 0;
+    <div class="sqft-dashboard glass-panel-sm">
+      <div class="sqft-data">
+        <h1 class="sqft-value" id="sqft-display">1200 <span class="sqft-unit">sqft</span></h1>
+        <p class="sqft-hint" id="sqft-hint">2BHK | Ideal for a small family.</p>
+      </div>
 
-let S = {location:"", sqft:1000, bhk:2, floor:1};
-let allLocations = [];
+      <div class="slider-wrapper">
+        <input type="range" id="sqft-slider" min="500" max="5000" step="50" value="1200" oninput="updateSqftVisuals()">
+        <div class="snap-marks">
+          <span onclick="setSqft(600)">1BHK</span>
+          <span onclick="setSqft(1200)">2BHK</span>
+          <span onclick="setSqft(1800)">3BHK</span>
+        </div>
+      </div>
 
-/* navigation */
-function next(){
-  screens[current].classList.remove("active");
-  current++;
-  screens[current].classList.add("active");
-}
+      <div class="preset-buttons">
+        <button class="preset-btn" onclick="setSqft(600)">Compact</button>
+        <button class="preset-btn active" onclick="setSqft(1200)" id="preset-family">Family</button>
+        <button class="preset-btn" onclick="setSqft(2500)" id="preset-luxury">Luxury</button>
+      </div>
+    </div>
 
-/* load locations */
-async function loadLocations(){
-  let res = await fetch('/get_locations');
-  let data = await res.json();
-  allLocations = data.locations;
+    <button class="primary-btn bottom-cta" onclick="confirmSqft()">Continue with this Size</button>
+  </div>
 
-  createMap();
-}
+  <!-- LAYOUT BUILDER -->
+  <div class="screen layout-screen" id="layout-step">
+    <div class="layout-header">
+      <h2>Build Your Layout</h2>
+      <p class="subtitle">Select bedrooms and design your bathrooms</p>
+    </div>
 
-loadLocations();
+    <div class="bhk-cards-container">
+      <div class="bhk-card" onclick="selectBhk(1)">
+        <div class="bhk-icon">🛏️</div>
+        <div class="bhk-title">1 BHK</div>
+      </div>
+      <div class="bhk-card" onclick="selectBhk(2)">
+        <div class="bhk-icon">🛏️</div>
+        <div class="bhk-title">2 BHK</div>
+      </div>
+      <div class="bhk-card" onclick="selectBhk(3)">
+        <div class="bhk-icon">🛏️</div>
+        <div class="bhk-title">3 BHK</div>
+      </div>
+      <div class="bhk-card" onclick="selectBhk(4)">
+        <div class="bhk-icon">🛏️</div>
+        <div class="bhk-title">4 BHK</div>
+      </div>
+      <div class="bhk-card" onclick="selectBhk(5)">
+        <div class="bhk-icon">🛏️</div>
+        <div class="bhk-title">5 BHK</div>
+      </div>
+    </div>
 
-/* create map grid */
-function createMap(){
-  let map = document.getElementById("map");
+    <div class="blueprint-container" id="blueprint">
+      <div class="blueprint-grid" id="blueprint-grid">
+        <!-- Generated visually via JS -->
+      </div>
+      <div class="blueprint-glow-sweep"></div>
+    </div>
 
-  allLocations.slice(0,9).forEach(loc=>{
-    let div = document.createElement("div");
-    div.className = "zone";
-    div.innerText = loc;
-    div.onclick = () => S.location = loc;
-    map.appendChild(div);
-  });
-}
+    <div class="bath-dashboard glass-panel-sm" id="bath-dashboard">
+      <div class="bath-controls">
+        <h3>Bathrooms</h3>
+        <div class="counter">
+          <button class="circle-btn" onclick="updateBaths(-1)">−</button>
+          <span id="bath-count">1</span>
+          <button class="circle-btn" onclick="updateBaths(1)">+</button>
+        </div>
+      </div>
 
-/* predict */
-function predict(){
-  next();
+      <p class="bath-hint" id="bath-hint">Standard config | Recommended for 1-2 people.</p>
+      <button class="primary-btn full-width" onclick="predict()">Calculate Final Price</button>
+    </div>
+  </div>
 
-  S.sqft = document.getElementById("sqft").value;
+  <!-- RESULT DASHBOARD -->
+  <div class="screen result-screen" id="result-step">
+    <div class="dashboard-panel glass-panel">
+      <div class="result-header">
+        <div class="ai-badge">✨ AI Generated Report</div>
+        <h2>Estimated Valuation</h2>
+      </div>
 
-  fetch('/predict',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(S)
-  })
-  .then(res=>res.json())
-  .then(data=>{
-    animatePrice(data.price);
-    showChart(data.price);
-  });
-}
+      <div class="price-container">
+        <div id="price" class="final-price">₹ 0 L</div>
+      </div>
 
-/* animate price */
-function animatePrice(price){
-  let count = 0;
-  let interval = setInterval(()=>{
-    count += price/30;
-    if(count>=price){
-      count = price;
-      clearInterval(interval);
+      <div class="confidence-meter">
+        <div class="meter-label">
+          <span>Model Confidence Match</span>
+          <span class="meter-value">94%</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill"></div>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="sm-label">Location</span>
+          <span class="sm-value" id="res-loc">--</span>
+        </div>
+        <div class="summary-item">
+          <span class="sm-label">Size</span>
+          <span class="sm-value" id="res-sqft">-- sqft</span>
+        </div>
+        <div class="summary-item">
+          <span class="sm-label">Bedrooms</span>
+          <span class="sm-value" id="res-bhk">-- BHK</span>
+        </div>
+        <div class="summary-item">
+          <span class="sm-label">Bathrooms</span>
+          <span class="sm-value" id="res-bath">-- Baths</span>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="chart" height="140"></canvas>
+      </div>
+
+      <button class="primary-btn restart-btn full-width" onclick="location.reload()">Start New Valuation</button>
+    </div>
+  </div>
+
+  <script>
+
+    let screens = document.querySelectorAll(".screen");
+    let current = 0;
+    let S = { location: "", sqft: 1000, bhk: 2, floor: 1 };
+    let locations = [];
+
+    function next() {
+      screens[current].classList.remove("active");
+      current++;
+      screens[current].classList.add("active");
     }
-    document.getElementById("price").innerText =
-      "₹ " + Math.round(count);
-  },50);
-}
 
-/* chart */
-function showChart(price){
-  let ctx = document.getElementById("chart");
+    let mapInstance;
+    let heatLayer;
+    let markers = {};
+    let locationsMeta = [];
+    let currentHeatmapMode = 'price';
+    let selectedMarker = null;
 
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ['Low','Mid','High'],
-      datasets: [{
-        label: 'Price Range',
-        data: [price*0.9, price, price*1.1],
-        borderWidth: 2
-      }]
+    async function load() {
+      let res = await fetch('/api/locations_meta');
+      let data = await res.json();
+      locationsMeta = data.meta;
+      locations = locationsMeta.map(l => l.name);
+
+      // Initialize Map
+      mapInstance = L.map('map', { zoomControl: false, attributionControl: false }).setView([13.0, 77.6], 11);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd',
+        maxZoom: 19
+      }).addTo(mapInstance);
+
+      // Render Markers
+      locationsMeta.forEach(loc => {
+        let icon = L.divIcon({ className: 'custom-marker', iconSize: [12, 12] });
+        let marker = L.marker([loc.lat, loc.lng], { icon: icon }).addTo(mapInstance);
+
+        marker.bindTooltip(`<b>${loc.name}</b><br>Avg: ₹${loc.price}L`, {
+          className: 'glass-tooltip', direction: 'top', offset: [0, -10]
+        });
+
+        marker.on('click', () => selectLocation(loc, marker));
+        markers[loc.name.toLowerCase()] = { loc, marker };
+      });
+
+      // Init Heatmap
+      updateHeatmap();
+
+      // Setup Autocomplete
+      let searchInput = document.getElementById('location-search');
+      let resultsDiv = document.getElementById('autocomplete-results');
+
+      searchInput.addEventListener('input', (e) => {
+        let val = e.target.value.toLowerCase();
+        resultsDiv.innerHTML = '';
+        if (!val) { resultsDiv.style.display = 'none'; return; }
+
+        let matches = locationsMeta.filter(l => l.name.toLowerCase().includes(val)).slice(0, 5);
+        if (matches.length > 0) {
+          resultsDiv.style.display = 'block';
+          matches.forEach(m => {
+            let div = document.createElement('div');
+            div.innerText = m.name;
+            div.onclick = () => {
+              searchInput.value = m.name;
+              resultsDiv.style.display = 'none';
+              selectLocation(m, markers[m.name.toLowerCase()].marker);
+            };
+            resultsDiv.appendChild(div);
+          });
+        } else {
+          resultsDiv.style.display = 'none';
+        }
+      });
+
+      // Ensure map renders correctly when screen becomes active
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.target.classList.contains('active')) {
+            setTimeout(() => mapInstance.invalidateSize(), 150);
+          }
+        });
+      });
+      observer.observe(document.getElementById('map-step'), { attributes: true, attributeFilter: ['class'] });
     }
-  });
-}
 
-</script>
+    function selectLocation(locData, markerObj) {
+      S.location = locData.name;
+
+      // Update map UI
+      if (selectedMarker) {
+        L.DomUtil.removeClass(selectedMarker._icon, 'selected-marker');
+      }
+      L.DomUtil.addClass(markerObj._icon, 'selected-marker');
+      selectedMarker = markerObj;
+
+      mapInstance.flyTo([locData.lat, locData.lng], 15, { animate: true, duration: 1.5 });
+
+      // Update Side Panel
+      document.getElementById('panel-title').innerText = locData.name;
+      document.getElementById('panel-price').innerText = "₹" + locData.price + " L";
+      document.getElementById('panel-demand').innerText = locData.demand + "/100";
+      document.getElementById('confirm-loc-btn').disabled = false;
+
+      document.getElementById('location-panel').classList.add('open');
+    }
+
+    function confirmLocation() {
+      document.getElementById('location-panel').classList.remove('open');
+      next();
+      setTimeout(() => updateSqftVisuals(), 100);
+    }
+
+    function updateSqftVisuals() {
+      let val = document.getElementById("sqft-slider").value;
+      S.sqft = val;
+
+      document.getElementById("sqft-display").innerHTML = `${val} <span class="sqft-unit">sqft</span>`;
+
+      let hint = "";
+      if (val <= 800) hint = "1BHK | Compact and highly efficient.";
+      else if (val <= 1500) hint = "2BHK | Ideal for a small family.";
+      else if (val <= 2500) hint = "3BHK | Spacious luxury layout.";
+      else hint = "4+ BHK | Villa-sized sprawling estate.";
+      document.getElementById("sqft-hint").innerHTML = hint;
+
+      let scale = Math.sqrt(val / 1200);
+      let cw = 120 * scale;
+      let cd = 80 * scale;
+      let ch = 40 + (val / 100);
+
+      let cube = document.getElementById("home-cube");
+      cube.style.setProperty('--cw', `${cw}px`);
+      cube.style.setProperty('--cd', `${cd}px`);
+      cube.style.setProperty('--ch', `${ch}px`);
+
+      let percentage = ((val - 500) / 4500) * 100;
+      document.getElementById("sqft-slider").style.background = `linear-gradient(90deg, #F59E0B ${percentage}%, rgba(255,255,255,0.1) ${percentage}%)`;
+
+      document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+      if (val <= 800) document.querySelectorAll('.preset-btn')[0].classList.add('active');
+      else if (val > 800 && val <= 1800) document.querySelectorAll('.preset-btn')[1].classList.add('active');
+      else document.querySelectorAll('.preset-btn')[2].classList.add('active');
+    }
+
+    function setSqft(val) {
+      document.getElementById("sqft-slider").value = val;
+      updateSqftVisuals();
+    }
+
+    function confirmSqft() {
+      next();
+    }
+
+    function selectBhk(bhk) {
+      S.bhk = bhk;
+
+      document.querySelectorAll('.bhk-card').forEach((card, idx) => {
+        if (idx === bhk - 1) card.classList.add('active-card');
+        else card.classList.remove('active-card');
+      });
+
+      document.querySelector('.bhk-cards-container').classList.add('minimized');
+      document.getElementById('blueprint').classList.add('visible');
+      document.getElementById('bath-dashboard').style.display = 'flex';
+
+      if (S.floor > bhk + 1) S.floor = bhk;
+      if (S.floor < 1) S.floor = 1;
+      updateBathVisuals();
+    }
+
+    function updateBaths(change) {
+      let newBath = S.floor + change;
+      if (newBath < 1) return;
+
+      if (S.bhk == 1 && newBath > 2) { showBathWarning("Too many bathrooms for a 1BHK!"); return; }
+      if (S.bhk == 2 && newBath > 3) { showBathWarning("Unusual layout: Max 3 baths for 2BHK."); return; }
+      if (S.bhk == 3 && newBath > 4) { showBathWarning("Unusual luxury config constraint."); return; }
+      if (newBath > 6) { showBathWarning("Max architectural limit reached."); return; }
+
+      S.floor = newBath;
+      updateBathVisuals();
+    }
+
+    function showBathWarning(msg) {
+      let hint = document.getElementById("bath-hint");
+      hint.innerText = msg;
+      hint.classList.add('warning');
+      setTimeout(() => updateBathVisuals(), 2000);
+    }
+
+    function updateBathVisuals() {
+      document.getElementById("bath-count").innerText = S.floor;
+      let hint = document.getElementById("bath-hint");
+      hint.classList.remove('warning');
+
+      if (S.floor === 1) hint.innerText = "Standard | Recommended for 1-2 people.";
+      else if (S.floor === 2) hint.innerText = "Family | Ideal for sharing.";
+      else if (S.floor >= 3 && S.bhk >= 3) hint.innerText = "Luxury | En-suite lifestyle.";
+      else hint.innerText = "High-availability layout.";
+
+      let grid = document.getElementById("blueprint-grid");
+      grid.innerHTML = "";
+      grid.innerHTML += `<div class="bp-room hall">HALL</div>`;
+      grid.innerHTML += `<div class="bp-room kitchen">KITCHენ</div>`;
+      for (let i = 1; i <= S.bhk; i++) {
+        grid.innerHTML += `<div class="bp-room bed">BED ${i}</div>`;
+      }
+      for (let i = 1; i <= S.floor; i++) {
+        grid.innerHTML += `<div class="bp-room bath">BATH ${i}</div>`;
+      }
+    }
+
+    function setHeatmap(mode) {
+      currentHeatmapMode = mode;
+      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('toggle-' + mode).classList.add('active');
+      updateHeatmap();
+    }
+
+    function updateHeatmap() {
+      if (heatLayer) mapInstance.removeLayer(heatLayer);
+
+      let heatData = locationsMeta.map(l => {
+        let intensity = currentHeatmapMode === 'price' ? (l.price / 300) : (l.demand / 100);
+        return [l.lat, l.lng, intensity];
+      });
+
+      let gradient = currentHeatmapMode === 'price' ?
+        { 0.4: 'navy', 0.6: 'blue', 0.8: 'cyan', 1.0: 'lime' } :
+        { 0.4: '#c4603a', 0.6: '#F59E0B', 0.8: '#ff006e', 1.0: '#FDE68A' };
+
+      heatLayer = L.heatLayer(heatData, { radius: 40, blur: 25, gradient: gradient }).addTo(mapInstance);
+    }
+
+    load();
+
+    let resultChart;
+    function predict() {
+      next();
+
+      // Populate summary UI
+      document.getElementById('res-loc').innerText = S.location;
+      document.getElementById('res-sqft').innerText = S.sqft + " sqft";
+      document.getElementById('res-bhk').innerText = S.bhk + " BHK";
+      document.getElementById('res-bath').innerText = S.floor + " Baths";
+
+      fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(S)
+      })
+        .then(r => r.json())
+        .then(data => {
+          let p = data.price;
+          animate(p);
+          renderChart(p);
+        });
+    }
+
+    function animate(p) {
+      let c = 0;
+      let el = document.getElementById("price");
+      let i = setInterval(() => {
+        c += p / 30;
+        if (c >= p) { c = p; clearInterval(i); }
+        el.innerText = "₹ " + Math.round(c).toLocaleString('en-IN') + " L";
+      }, 40);
+    }
+
+    function renderChart(p) {
+      if (resultChart) resultChart.destroy();
+
+      let ctx = document.getElementById("chart").getContext("2d");
+
+      let gradient = ctx.createLinearGradient(0, 0, 0, 140);
+      gradient.addColorStop(0, 'rgba(245, 158, 11, 0.4)');
+      gradient.addColorStop(1, 'rgba(245, 158, 11, 0.0)');
+
+      resultChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Conservative', 'Estimated', 'Aggressive'],
+          datasets: [{
+            data: [p * 0.92, p, p * 1.08],
+            borderColor: '#F59E0B',
+            backgroundColor: gradient,
+            borderWidth: 3,
+            pointBackgroundColor: '#fff',
+            pointBorderColor: '#F59E0B',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(20,15,10,0.9)',
+              titleColor: '#888',
+              bodyColor: '#FDE68A',
+              bodyFont: { size: 16, weight: 'bold' },
+              displayColors: false,
+              callbacks: {
+                label: function (context) { return "₹ " + Math.round(context.raw) + " L"; }
+              }
+            }
+          },
+          scales: {
+            x: { grid: { display: false, drawBorder: false }, ticks: { color: '#888', font: { family: 'Inter' } } },
+            y: { display: false, min: p * 0.85, max: p * 1.15 }
+          }
+        }
+      });
+    }
+
+  </script>
 
 </body>
-</html>
+
+</html>s

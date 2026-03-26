@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 import pickle
 import json
 import numpy as np
+import hashlib
 
 app = Flask(__name__)
 
@@ -22,6 +23,38 @@ def index():
 @app.route('/get_locations')
 def get_locations():
     return jsonify({'locations': locations})
+
+
+def get_pseudo_coords(location_name):
+    hash_obj = hashlib.md5(location_name.encode())
+    hash_int = int(hash_obj.hexdigest(), 16)
+    
+    lat = 12.85 + (hash_int % 300) / 1000.0
+    lng = 77.45 + ((hash_int // 300) % 300) / 1000.0
+    demand = (hash_int % 100) + 1
+    
+    return lat, lng, demand
+
+
+@app.route('/api/locations_meta')
+def get_locations_meta():
+    meta = []
+    base_sqft = 1000.0
+    base_bhk = 2
+    base_bath = 2
+    
+    for loc in locations:
+        price = predict_price(loc, base_sqft, base_bhk, base_bath)
+        lat, lng, demand = get_pseudo_coords(loc)
+        meta.append({
+            "name": loc,
+            "price": round(float(price), 2),
+            "lat": lat,
+            "lng": lng,
+            "demand": demand
+        })
+        
+    return jsonify({"meta": meta})
 
 
 def predict_price(location, sqft, bhk, bath):
