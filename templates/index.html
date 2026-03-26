@@ -6,39 +6,66 @@
 <style>
 body {
   margin:0;
-  font-family:'Segoe UI';
-  background:#0e0c06;
+  font-family:Arial;
+  background:#1a1208;
   color:white;
-  overflow:hidden;
+  text-align:center;
 }
 
-.screen {
-  display:none;
-  height:100vh;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-}
+/* Screens */
+.screen { display:none; padding:40px; }
+.screen.active { display:block; }
 
-.screen.active { display:flex; }
-
-h1 {
-  font-size:60px;
-  letter-spacing:2px;
-}
-
+/* Buttons */
 button {
-  padding:12px 28px;
+  padding:12px 20px;
+  margin:10px;
   background:#c4603a;
   border:none;
   border-radius:8px;
   color:white;
   cursor:pointer;
-  margin:10px;
+}
+
+/* Search */
+#searchBox {
+  padding:10px;
+  width:80%;
+  max-width:400px;
+  border-radius:6px;
+  border:none;
+}
+
+/* Results */
+.result {
+  background:#2d1f0e;
+  padding:10px;
+  margin:5px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.result:hover {
+  background:#c4603a;
+}
+
+/* Map blocks */
+.area {
+  display:inline-block;
+  padding:15px;
+  margin:8px;
+  background:#2d1f0e;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.area:hover {
+  background:#c4603a;
 }
 
 #price {
-  font-size:45px;
+  font-size:30px;
+  margin-top:20px;
   color:#e8d5a3;
 }
 </style>
@@ -46,51 +73,53 @@ button {
 
 <body>
 
+<!-- SCREEN 1 -->
 <div class="screen active" id="s1">
-  <h1>Nestiq</h1>
-  <p>AI Powered Property Valuation</p>
+  <h1>Nestiq AI</h1>
   <button onclick="next()">Start</button>
 </div>
 
+<!-- SCREEN 2 (SEARCH + MAP) -->
 <div class="screen" id="s2">
   <h2>Select Location</h2>
-  <select id="location"></select>
+
+  <input id="searchBox" placeholder="Search location..." oninput="searchLocation()">
+
+  <div id="results"></div>
+
+  <h3>Popular Areas</h3>
+  <div id="map"></div>
+
   <button onclick="next()">Next</button>
 </div>
 
+<!-- SCREEN 3 -->
 <div class="screen" id="s3">
-  <h2>Enter Sqft</h2>
-  <input type="number" id="sqft">
+  <input id="sqft" placeholder="Sqft">
   <button onclick="next()">Next</button>
 </div>
 
+<!-- SCREEN 4 -->
 <div class="screen" id="s4">
-  <h2>BHK</h2>
-  <select id="bhk">
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-  </select>
+  <button onclick="S.bhk=1">1 BHK</button>
+  <button onclick="S.bhk=2">2 BHK</button>
+  <button onclick="S.bhk=3">3 BHK</button>
+  <button onclick="S.bhk=4">4 BHK</button>
   <button onclick="next()">Next</button>
 </div>
 
+<!-- SCREEN 5 -->
 <div class="screen" id="s5">
-  <h2>Floors</h2>
-  <select id="floor">
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-  </select>
+  <button onclick="S.floor=1">1 Floor</button>
+  <button onclick="S.floor=2">2 Floors</button>
+  <button onclick="S.floor=3">3 Floors</button>
+  <button onclick="S.floor=4">4 Floors</button>
   <button onclick="predict()">Predict</button>
 </div>
 
+<!-- RESULT -->
 <div class="screen" id="s6">
-  <h2>Predicted Price</h2>
-  <div id="price">...</div>
-  <div id="details"></div>
-  <button onclick="restart()">Restart</button>
+  <h2 id="price"></h2>
 </div>
 
 <script>
@@ -98,58 +127,83 @@ button {
 let screens = document.querySelectorAll(".screen");
 let current = 0;
 
+let S = {location:"", sqft:1000, bhk:2, floor:1};
+let allLocations = [];
+
+/* Navigation */
 function next(){
   screens[current].classList.remove("active");
   current++;
   screens[current].classList.add("active");
 }
 
-function restart(){
-  location.reload();
-}
-
+/* Load locations */
 async function loadLocations(){
   let res = await fetch('/get_locations');
   let data = await res.json();
+  allLocations = data.locations;
 
-  let select = document.getElementById("location");
-  data.locations.slice(0,20).forEach(loc=>{
-    let opt = document.createElement("option");
-    opt.text = loc;
-    select.add(opt);
-  });
+  showPopular();
 }
 
 loadLocations();
 
-function predict(){
+/* Search */
+function searchLocation(){
+  let input = document.getElementById("searchBox").value.toLowerCase();
+  let results = document.getElementById("results");
+  results.innerHTML = "";
 
+  if(input.length < 2) return;
+
+  let filtered = allLocations.filter(loc =>
+    loc.toLowerCase().includes(input)
+  ).slice(0,10);
+
+  filtered.forEach(loc=>{
+    let div = document.createElement("div");
+    div.className = "result";
+    div.innerText = loc;
+    div.onclick = () => {
+      S.location = loc;
+      document.getElementById("searchBox").value = loc;
+      results.innerHTML = "";
+    };
+    results.appendChild(div);
+  });
+}
+
+/* Map style (popular) */
+function showPopular(){
+  let map = document.getElementById("map");
+
+  allLocations.slice(0,12).forEach(loc=>{
+    let div = document.createElement("div");
+    div.className = "area";
+    div.innerText = loc;
+    div.onclick = () => {
+      S.location = loc;
+      document.getElementById("searchBox").value = loc;
+    };
+    map.appendChild(div);
+  });
+}
+
+/* Prediction */
+function predict(){
   next();
 
-  let location = document.getElementById("location").value;
-  let sqft = parseFloat(document.getElementById("sqft").value);
-  let bhk = parseInt(document.getElementById("bhk").value);
-  let floor = parseInt(document.getElementById("floor").value);
+  S.sqft = document.getElementById("sqft").value;
 
   fetch('/predict',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      location, sqft, bhk, floor
-    })
+    body:JSON.stringify(S)
   })
   .then(res=>res.json())
   .then(data=>{
-
-    let price = data.price;
-    let lakh = price / 100000;
-
     document.getElementById("price").innerText =
-      "₹ " + lakh.toFixed(2) + " L";
-
-    document.getElementById("details").innerHTML =
-      `📍 ${location} | ${sqft} sqft | ${bhk} BHK`;
-
+      "₹ " + data.price;
   });
 }
 
@@ -157,4 +211,3 @@ function predict(){
 
 </body>
 </html>
-</html>s

@@ -5,14 +5,12 @@ import numpy as np
 
 app = Flask(__name__)
 
-# Load model
 with open('bangalore_house_price_model.pkl', 'rb') as f:
     model = pickle.load(f)
 
-# Load columns
 with open('columns.json', 'r') as f:
     data = json.load(f)
-    data_columns = [col.lower() for col in data['data_columns']]
+    data_columns = data['data_columns']
     locations = data_columns[3:]
 
 
@@ -23,7 +21,7 @@ def index():
 
 @app.route('/get_locations')
 def get_locations():
-    return jsonify({'locations': sorted(locations)})
+    return jsonify({'locations': locations})
 
 
 def predict_price(location, sqft, bhk, bath):
@@ -35,9 +33,10 @@ def predict_price(location, sqft, bhk, bath):
 
     location = location.lower()
 
-    if location in data_columns:
-        loc_index = data_columns.index(location)
-        x[loc_index] = 1
+    for i in range(len(data_columns)):
+        if data_columns[i].lower() == location:
+            x[i] = 1
+            break
 
     return model.predict([x])[0]
 
@@ -46,17 +45,11 @@ def predict_price(location, sqft, bhk, bath):
 def predict():
     data = request.get_json()
 
-    location = data.get('location', '').lower()
-    sqft = float(data.get('sqft', 0))
-    bhk = int(data.get('bhk', 0))
-    bath = int(data.get('floor', 0))
-
-    print("DEBUG:", location, sqft, bhk, bath)  # 🔥 important debug
+    location = data['location']
+    sqft = float(data['sqft'])
+    bhk = int(data['bhk'])
+    bath = int(data['floor'])
 
     price = predict_price(location, sqft, bhk, bath)
 
     return jsonify({"price": round(price, 2)})
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
