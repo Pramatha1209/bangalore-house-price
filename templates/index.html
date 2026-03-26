@@ -1,6 +1,41 @@
 <!DOCTYPE html>
 <html>
-<body style="background:black; color:white;">
-<h1>WORKING</h1>
+<head>
+  <title>Test UI</title>
+</head>
+<body style="background:black; color:white; text-align:center;">
+
+<h1>Smart Property Predictor</h1>
+
+<select id="location">
+  <option>Whitefield</option>
+  <option>Indiranagar</option>
+</select>
+
+<input type="number" id="sqft" placeholder="Sqft">
+
+<button onclick="predict()">Predict</button>
+
+<h2 id="result"></h2>
+
+<script>
+function predict(){
+  fetch('/predict',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      location:document.getElementById("location").value,
+      sqft:document.getElementById("sqft").value,
+      bhk:2,
+      floor:1
+    })
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    document.getElementById("result").innerText="₹ "+data.price;
+  });
+}
+</script>
+
 </body>
-</html></script>
+</html>
