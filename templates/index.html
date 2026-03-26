@@ -1,92 +1,158 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Smart Property Predictor</title>
+<meta charset="UTF-8">
+<title>Nestiq Property Predictor</title>
 
-  <style>
-    body {
-      background: #1a1208;
-      color: white;
-      font-family: Arial;
-      text-align: center;
-      padding: 40px;
-    }
+<style>
+body {
+  margin:0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg,#1a1208,#2d1f0e);
+  color:white;
+  overflow:hidden;
+}
 
-    input, select {
-      padding: 10px;
-      margin: 10px;
-      border-radius: 6px;
-      border: none;
-    }
+.screen {
+  display:none;
+  height:100vh;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  text-align:center;
+}
 
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-      background: #c4603a;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+.screen.active {
+  display:flex;
+  animation: fade 0.5s ease;
+}
 
-    #result {
-      margin-top: 20px;
-      font-size: 24px;
-    }
-  </style>
+@keyframes fade {
+  from {opacity:0; transform:translateY(20px);}
+  to {opacity:1; transform:translateY(0);}
+}
+
+button {
+  padding:12px 24px;
+  margin:10px;
+  background:#c4603a;
+  border:none;
+  border-radius:8px;
+  color:white;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover {
+  transform:scale(1.05);
+}
+
+input, select {
+  padding:10px;
+  margin:10px;
+  border-radius:6px;
+  border:none;
+}
+
+h1 { font-size:40px; }
+h2 { font-weight:300; }
+
+#price {
+  font-size:40px;
+  margin-top:20px;
+  color:#e8d5a3;
+}
+</style>
 </head>
 
 <body>
 
-<h1>🏠 Smart Property Predictor</h1>
+<div id="app">
 
-<select id="location">
-  <option>Whitefield</option>
-  <option>Indiranagar</option>
-  <option>Electronic City</option>
-  <option>HSR Layout</option>
-</select>
+<!-- SCREEN 1 -->
+<div class="screen active">
+  <h1>🏠 Nestiq</h1>
+  <h2>AI Property Valuation</h2>
+  <button onclick="next()">Start</button>
+</div>
 
-<br>
+<!-- SCREEN 2 -->
+<div class="screen">
+  <h2>Select Location</h2>
+  <select id="location">
+    <option>Whitefield</option>
+    <option>Indiranagar</option>
+    <option>Electronic City</option>
+    <option>HSR Layout</option>
+  </select>
+  <button onclick="next()">Next</button>
+</div>
 
-<input type="number" id="sqft" placeholder="Enter Sqft">
+<!-- SCREEN 3 -->
+<div class="screen">
+  <h2>Enter Sqft</h2>
+  <input type="number" id="sqft" placeholder="Sqft">
+  <button onclick="next()">Next</button>
+</div>
 
-<br>
+<!-- SCREEN 4 -->
+<div class="screen">
+  <h2>Select BHK</h2>
+  <select id="bhk">
+    <option value="1">1 BHK</option>
+    <option value="2">2 BHK</option>
+    <option value="3">3 BHK</option>
+    <option value="4">4 BHK</option>
+  </select>
+  <button onclick="next()">Next</button>
+</div>
 
-<select id="bhk">
-  <option value="1">1 BHK</option>
-  <option value="2">2 BHK</option>
-  <option value="3">3 BHK</option>
-  <option value="4">4 BHK</option>
-</select>
+<!-- SCREEN 5 -->
+<div class="screen">
+  <h2>Select Floors</h2>
+  <select id="floor">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+  </select>
+  <button onclick="predict()">Predict</button>
+</div>
 
-<br>
+<!-- RESULT -->
+<div class="screen">
+  <h2>Predicted Price</h2>
+  <div id="price">Calculating...</div>
+  <button onclick="restart()">Restart</button>
+</div>
 
-<select id="floor">
-  <option value="1">1 Floor</option>
-  <option value="2">2 Floors</option>
-  <option value="3">3 Floors</option>
-  <option value="4">4 Floors</option>
-</select>
-
-<br>
-
-<button onclick="predict()">Predict Price</button>
-
-<h2 id="result"></h2>
+</div>
 
 <script>
+
+let screens = document.querySelectorAll(".screen");
+let current = 0;
+
+function next(){
+  screens[current].classList.remove("active");
+  current++;
+  screens[current].classList.add("active");
+}
+
+function restart(){
+  location.reload();
+}
+
 function predict(){
+
+  next();
+
+  document.getElementById("price").innerText = "AI is thinking...";
 
   let location = document.getElementById("location").value;
   let sqft = parseFloat(document.getElementById("sqft").value);
   let bhk = parseInt(document.getElementById("bhk").value);
   let floor = parseInt(document.getElementById("floor").value);
-
-  if(!sqft){
-    alert("Enter sqft");
-    return;
-  }
 
   fetch('/predict',{
     method:'POST',
@@ -100,15 +166,24 @@ function predict(){
   })
   .then(res=>res.json())
   .then(data=>{
-    document.getElementById("result").innerText =
-      "💰 Price: ₹ " + data.price;
-  })
-  .catch(err=>{
-    console.log(err);
-    document.getElementById("result").innerText = "Error getting prediction";
+    animatePrice(data.price);
   });
 }
+
+function animatePrice(finalPrice){
+  let count = 0;
+  let interval = setInterval(()=>{
+    count += finalPrice / 30;
+    if(count >= finalPrice){
+      count = finalPrice;
+      clearInterval(interval);
+    }
+    document.getElementById("price").innerText =
+      "₹ " + Math.round(count);
+  },50);
+}
+
 </script>
 
 </body>
-</html>
+</html>s
