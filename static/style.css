@@ -25,10 +25,6 @@ button {
     cursor: pointer;
 }
 
-.cards button {
-    margin: 5px;
-}
-
 @keyframes fade {
     from {opacity: 0;}
     to {opacity: 1;}

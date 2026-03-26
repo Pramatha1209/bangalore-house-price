@@ -9,35 +9,35 @@
 
 <div id="app">
 
-    <!-- SCREEN 1 -->
-    <section class="screen active" id="welcome">
+    <!-- Welcome -->
+    <section class="screen active">
         <h1>🏠 Smart Property Predictor</h1>
         <button onclick="nextScreen()">Start</button>
     </section>
 
-    <!-- SCREEN 2 -->
-    <section class="screen" id="location">
+    <!-- Location -->
+    <section class="screen">
         <h2>Select Location</h2>
         <select id="locationSelect">
-            <option value="Whitefield">Whitefield</option>
+            <option value="1st Phase JP Nagar">1st Phase JP Nagar</option>
             <option value="Indiranagar">Indiranagar</option>
-            <option value="Electronic City">Electronic City</option>
+            <option value="Whitefield">Whitefield</option>
         </select>
         <button onclick="nextScreen()">Next</button>
     </section>
 
-    <!-- SCREEN 3 -->
-    <section class="screen" id="sqft">
+    <!-- Sqft -->
+    <section class="screen">
         <h2>Select Sqft</h2>
         <input type="range" min="500" max="5000" id="sqftRange" oninput="updateSqft()">
         <p id="sqftValue">500</p>
         <button onclick="nextScreen()">Next</button>
     </section>
 
-    <!-- SCREEN 4 -->
-    <section class="screen" id="bhk">
+    <!-- BHK -->
+    <section class="screen">
         <h2>Select BHK</h2>
-        <div class="cards">
+        <div>
             <button onclick="selectBHK(1)">1 BHK</button>
             <button onclick="selectBHK(2)">2 BHK</button>
             <button onclick="selectBHK(3)">3 BHK</button>
@@ -46,10 +46,10 @@
         <button onclick="nextScreen()">Next</button>
     </section>
 
-    <!-- SCREEN 5 -->
-    <section class="screen" id="floors">
+    <!-- Floors -->
+    <section class="screen">
         <h2>Select Floors</h2>
-        <div class="cards">
+        <div>
             <button onclick="selectFloor(1)">1</button>
             <button onclick="selectFloor(2)">2</button>
             <button onclick="selectFloor(3)">3</button>
@@ -58,8 +58,8 @@
         <button onclick="predict()">Predict</button>
     </section>
 
-    <!-- SCREEN 6 -->
-    <section class="screen" id="result">
+    <!-- Result -->
+    <section class="screen">
         <h2>💰 Predicted Price</h2>
         <p id="price">Calculating...</p>
         <button onclick="restart()">Try Again</button>
