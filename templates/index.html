@@ -1,38 +1,111 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Test UI</title>
-</head>
-<body style="background:black; color:white; text-align:center;">
+  <title>Smart Property Predictor</title>
 
-<h1>Smart Property Predictor</h1>
+  <style>
+    body {
+      background: #1a1208;
+      color: white;
+      font-family: Arial;
+      text-align: center;
+      padding: 40px;
+    }
+
+    input, select {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 6px;
+      border: none;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      background: #c4603a;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 24px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🏠 Smart Property Predictor</h1>
 
 <select id="location">
   <option>Whitefield</option>
   <option>Indiranagar</option>
+  <option>Electronic City</option>
+  <option>HSR Layout</option>
 </select>
 
-<input type="number" id="sqft" placeholder="Sqft">
+<br>
 
-<button onclick="predict()">Predict</button>
+<input type="number" id="sqft" placeholder="Enter Sqft">
+
+<br>
+
+<select id="bhk">
+  <option value="1">1 BHK</option>
+  <option value="2">2 BHK</option>
+  <option value="3">3 BHK</option>
+  <option value="4">4 BHK</option>
+</select>
+
+<br>
+
+<select id="floor">
+  <option value="1">1 Floor</option>
+  <option value="2">2 Floors</option>
+  <option value="3">3 Floors</option>
+  <option value="4">4 Floors</option>
+</select>
+
+<br>
+
+<button onclick="predict()">Predict Price</button>
 
 <h2 id="result"></h2>
 
 <script>
 function predict(){
+
+  let location = document.getElementById("location").value;
+  let sqft = parseFloat(document.getElementById("sqft").value);
+  let bhk = parseInt(document.getElementById("bhk").value);
+  let floor = parseInt(document.getElementById("floor").value);
+
+  if(!sqft){
+    alert("Enter sqft");
+    return;
+  }
+
   fetch('/predict',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
-      location:document.getElementById("location").value,
-      sqft:document.getElementById("sqft").value,
-      bhk:2,
-      floor:1
+      location: location,
+      sqft: sqft,
+      bhk: bhk,
+      floor: floor
     })
   })
   .then(res=>res.json())
   .then(data=>{
-    document.getElementById("result").innerText="₹ "+data.price;
+    document.getElementById("result").innerText =
+      "💰 Price: ₹ " + data.price;
+  })
+  .catch(err=>{
+    console.log(err);
+    document.getElementById("result").innerText = "Error getting prediction";
   });
 }
 </script>
