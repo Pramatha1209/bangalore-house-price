@@ -414,29 +414,30 @@
       cursor: not-allowed;
     }
 
-    /* Custom Marker */
+    /* Custom Marker - Realistic */
     .custom-marker {
-      background: #F59E0B;
+      background: #FBBF24;
       border: 2px solid #fff;
       border-radius: 50%;
-      box-shadow: 0 0 10px #F59E0B;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
       transition: 0.3s;
     }
 
     .custom-marker.selected-marker {
-      background: #ff006e;
-      box-shadow: 0 0 20px #ff006e;
+      background: #D97706;
+      border: 3px solid #fff;
+      box-shadow: 0 0 15px rgba(217, 119, 6, 0.6);
       transform: scale(1.5);
       animation: pulseMarker 1.5s infinite alternate;
     }
 
     @keyframes pulseMarker {
       from {
-        box-shadow: 0 0 10px #ff006e;
+        box-shadow: 0 0 5px rgba(217, 119, 6, 0.5);
       }
 
       to {
-        box-shadow: 0 0 25px #ff006e, 0 0 40px #ff006e;
+        box-shadow: 0 0 15px rgba(217, 119, 6, 0.8), 0 0 25px rgba(217, 119, 6, 0.4);
       }
     }
 
@@ -710,50 +711,85 @@
 
     .bhk-cards-container {
       display: flex;
-      gap: 15px;
-      margin-top: 100px;
+      flex-direction: column-reverse;
+      /* Stack like architectural building */
+      gap: 6px;
+      margin-top: 20px;
       z-index: 10;
-      transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+      width: 260px;
+      transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .bhk-cards-container.minimized {
-      transform: scale(0.7) translateY(-220px);
+      transform: scale(0.6) translateY(-250px);
     }
 
     .bhk-card {
       background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(245, 158, 11, 0.2);
-      padding: 20px 25px;
-      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 16px 20px;
+      border-radius: 4px;
+      /* Hard architectural edges */
       cursor: pointer;
-      backdrop-filter: blur(10px);
-      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      backdrop-filter: blur(5px);
+      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
       text-align: center;
+      position: relative;
+    }
+
+    .bhk-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0%;
+      height: 2px;
+      background: #F59E0B;
+      transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .bhk-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 15px 30px rgba(245, 158, 11, 0.3);
-      background: rgba(245, 158, 11, 0.15);
-      border-color: #F59E0B;
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.4);
+      transform: translateX(10px);
+    }
+
+    .bhk-card:hover::before {
+      width: 100%;
     }
 
     .bhk-card.active-card {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px rgba(245, 158, 11, 0.5);
-      background: rgba(245, 158, 11, 0.25);
-      border-color: #FDE68A;
+      background: rgba(245, 158, 11, 0.2);
+      border-color: #F59E0B;
+      transform: translateX(20px) scale(1.05);
+      z-index: 2;
+      box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+    }
+
+    .bhk-card.active-card::before {
+      width: 100%;
+      height: 100%;
+      opacity: 0.1;
     }
 
     .bhk-icon {
-      font-size: 36px;
-      margin-bottom: 10px;
+      display: none;
+      /* Hide icon for sleek architecture mode */
     }
 
     .bhk-title {
-      font-size: 18px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 500;
+      color: #ccc;
+      letter-spacing: 2px;
+      transition: 0.3s;
+    }
+
+    .bhk-card:hover .bhk-title,
+    .bhk-card.active-card .bhk-title {
       color: #FDE68A;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
     }
 
     .blueprint-container {
@@ -1117,6 +1153,152 @@
       font-size: 18px;
       padding: 18px;
     }
+
+    /* LOADING & AI INSIGHTS CSS */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 15, 20, 0.95);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(20px);
+    }
+
+    .loading-overlay.active {
+      display: flex;
+      animation: fadeIn 0.5s forwards;
+    }
+
+    .scan-line {
+      width: 2px;
+      height: 100px;
+      background: #F59E0B;
+      box-shadow: 0 0 20px #F59E0B, 0 0 40px #F59E0B;
+      animation: scanLeftRight 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes scanLeftRight {
+      0% {
+        transform: translateX(-150px);
+      }
+
+      100% {
+        transform: translateX(150px);
+      }
+    }
+
+    .loading-text {
+      margin-top: 30px;
+      font-size: 20px;
+      font-weight: 300;
+      letter-spacing: 4px;
+      color: #F59E0B;
+      animation: pulseText 1s infinite alternate;
+    }
+
+    @keyframes pulseText {
+      from {
+        opacity: 0.5;
+      }
+
+      to {
+        opacity: 1;
+        text-shadow: 0 0 10px #F59E0B;
+      }
+    }
+
+    .final-price.locked {
+      animation: explodeValue 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    @keyframes explodeValue {
+      0% {
+        transform: scale(1);
+        filter: brightness(1);
+      }
+
+      50% {
+        transform: scale(1.1);
+        filter: brightness(1.5);
+        text-shadow: 0 0 50px #F59E0B;
+      }
+
+      100% {
+        transform: scale(1);
+        filter: brightness(1.2);
+        text-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+      }
+    }
+
+    .ai-insights {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .insight-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .insight-row.show {
+      animation: slideFadeUp 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
+    @keyframes slideFadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .insight-label {
+      font-size: 13px;
+      color: #888;
+      letter-spacing: 1px;
+      width: 80px;
+      text-align: left;
+    }
+
+    .insight-bar-container {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      margin: 0 15px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .insight-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #D97706, #FDE68A);
+      width: 0%;
+      transition: width 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+      border-radius: 10px;
+    }
+
+    .insight-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #FDE68A;
+      width: 60px;
+      text-align: right;
+    }
   </style>
 </head>
 
@@ -1219,25 +1401,20 @@
     </div>
 
     <div class="bhk-cards-container">
-      <div class="bhk-card" onclick="selectBhk(1)">
-        <div class="bhk-icon">🛏️</div>
-        <div class="bhk-title">1 BHK</div>
-      </div>
-      <div class="bhk-card" onclick="selectBhk(2)">
-        <div class="bhk-icon">🛏️</div>
-        <div class="bhk-title">2 BHK</div>
-      </div>
-      <div class="bhk-card" onclick="selectBhk(3)">
-        <div class="bhk-icon">🛏️</div>
-        <div class="bhk-title">3 BHK</div>
+      <div class="bhk-card" onclick="selectBhk(5)">
+        <div class="bhk-title">FLOOR 5 • 5 BHK</div>
       </div>
       <div class="bhk-card" onclick="selectBhk(4)">
-        <div class="bhk-icon">🛏️</div>
-        <div class="bhk-title">4 BHK</div>
+        <div class="bhk-title">FLOOR 4 • 4 BHK</div>
       </div>
-      <div class="bhk-card" onclick="selectBhk(5)">
-        <div class="bhk-icon">🛏️</div>
-        <div class="bhk-title">5 BHK</div>
+      <div class="bhk-card" onclick="selectBhk(3)">
+        <div class="bhk-title">FLOOR 3 • 3 BHK</div>
+      </div>
+      <div class="bhk-card" onclick="selectBhk(2)">
+        <div class="bhk-title">FLOOR 2 • 2 BHK</div>
+      </div>
+      <div class="bhk-card" onclick="selectBhk(1)">
+        <div class="bhk-title">FLOOR 1 • 1 BHK</div>
       </div>
     </div>
 
@@ -1265,7 +1442,14 @@
 
   <!-- RESULT DASHBOARD -->
   <div class="screen result-screen" id="result-step">
-    <div class="dashboard-panel glass-panel">
+
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="scan-line"></div>
+      <div class="loading-text">Analyzing market trends...</div>
+    </div>
+
+    <div class="dashboard-panel glass-panel" id="final-dashboard"
+      style="opacity:0; transform: translateY(20px); transition: all 1s;">
       <div class="result-header">
         <div class="ai-badge">✨ AI Generated Report</div>
         <h2>Estimated Valuation</h2>
@@ -1285,22 +1469,27 @@
         </div>
       </div>
 
-      <div class="summary-grid">
-        <div class="summary-item">
-          <span class="sm-label">Location</span>
-          <span class="sm-value" id="res-loc">--</span>
+      <div class="ai-insights" id="insights-panel">
+        <div class="insight-row" style="animation-delay: 0.2s;">
+          <div class="insight-label">LOCATION</div>
+          <div class="insight-bar-container">
+            <div class="insight-bar-fill" id="bar-loc"></div>
+          </div>
+          <div class="insight-value">HIGH</div>
         </div>
-        <div class="summary-item">
-          <span class="sm-label">Size</span>
-          <span class="sm-value" id="res-sqft">-- sqft</span>
+        <div class="insight-row" style="animation-delay: 0.4s;">
+          <div class="insight-label">SPACE</div>
+          <div class="insight-bar-container">
+            <div class="insight-bar-fill" id="bar-sqft"></div>
+          </div>
+          <div class="insight-value">OPT</div>
         </div>
-        <div class="summary-item">
-          <span class="sm-label">Bedrooms</span>
-          <span class="sm-value" id="res-bhk">-- BHK</span>
-        </div>
-        <div class="summary-item">
-          <span class="sm-label">Bathrooms</span>
-          <span class="sm-value" id="res-bath">-- Baths</span>
+        <div class="insight-row" style="animation-delay: 0.6s;">
+          <div class="insight-label">LAYOUT</div>
+          <div class="insight-bar-container">
+            <div class="insight-bar-fill" id="bar-lay"></div>
+          </div>
+          <div class="insight-value">PREM</div>
         </div>
       </div>
 
@@ -1554,11 +1743,10 @@
     function predict() {
       next();
 
-      // Populate summary UI
-      document.getElementById('res-loc').innerText = S.location;
-      document.getElementById('res-sqft').innerText = S.sqft + " sqft";
-      document.getElementById('res-bhk').innerText = S.bhk + " BHK";
-      document.getElementById('res-bath').innerText = S.floor + " Baths";
+      let loader = document.getElementById("loading-overlay");
+      let dash = document.getElementById("final-dashboard");
+      loader.classList.add("active");
+      dash.style.opacity = "0";
 
       fetch('/predict', {
         method: 'POST',
@@ -1568,19 +1756,57 @@
         .then(r => r.json())
         .then(data => {
           let p = data.price;
-          animate(p);
-          renderChart(p);
+
+          // Simulate heavy AI processing cinematic sequence
+          setTimeout(() => {
+            loader.classList.remove("active");
+            loader.style.display = "none";
+
+            dash.style.display = "flex";
+            setTimeout(() => {
+              dash.style.opacity = "1";
+              dash.style.transform = "translateY(0)";
+              animate(p);
+              renderChart(p);
+            }, 100);
+          }, 2000);
+
         });
     }
 
     function animate(p) {
-      let c = 0;
+      let c = p * 0.4;
       let el = document.getElementById("price");
-      let i = setInterval(() => {
-        c += p / 30;
-        if (c >= p) { c = p; clearInterval(i); }
-        el.innerText = "₹ " + Math.round(c).toLocaleString('en-IN') + " L";
-      }, 40);
+      el.classList.remove("locked");
+
+      let start = performance.now();
+      let duration = 2400;
+
+      function step(now) {
+        let t = (now - start) / duration;
+        if (t > 1) t = 1;
+        // EaseOutQuart Slot-Machine Equation
+        let ease = 1 - Math.pow(1 - t, 4);
+        let curr = c + (p - c) * ease;
+
+        el.innerText = "₹ " + Math.round(curr).toLocaleString('en-IN') + " L";
+
+        if (t < 1) requestAnimationFrame(step);
+        else {
+          el.innerText = "₹ " + Math.round(p).toLocaleString('en-IN') + " L";
+          el.classList.add("locked");
+
+          // Trigger Insights Sliding Fade Animation
+          document.querySelectorAll('.insight-row').forEach(row => row.classList.add('show'));
+          // Set deterministic random bars relative to values configured
+          setTimeout(() => {
+            document.getElementById("bar-loc").style.width = Math.min(100, (p / 200) * 100 + 30) + "%";
+            document.getElementById("bar-sqft").style.width = Math.min(100, (S.sqft / 4000) * 100 + 20) + "%";
+            document.getElementById("bar-lay").style.width = Math.min(100, (S.bhk / 5) * 100) + "%";
+          }, 400);
+        }
+      }
+      requestAnimationFrame(step);
     }
 
     function renderChart(p) {
