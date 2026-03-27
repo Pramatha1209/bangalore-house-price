@@ -19,32 +19,80 @@
       overflow: hidden;
     }
 
-    /* Base Screens */
+    /* Base Screens - Flow-Through Cinematic Depth */
     .screen {
-      display: none;
-      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100vw;
+      height: 100vh;
       justify-content: center;
       align-items: center;
       flex-direction: column;
-      transition: 0.5s;
-      position: relative;
+      opacity: 0;
+      visibility: hidden;
+      z-index: 1;
+      pointer-events: none;
+      transform: scale(1.15) translateZ(0);
+      filter: blur(15px);
+      transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1), filter 1.2s ease;
+      display: flex;
     }
 
     .screen.active {
-      display: flex;
-      animation: fade 0.8s ease forwards;
+      opacity: 1;
+      visibility: visible;
+      z-index: 10;
+      pointer-events: auto;
+      transform: scale(1) translateZ(0);
+      filter: blur(0px);
     }
 
-    @keyframes fade {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
+    /* AI Transition Core */
+    .ai-transition-layer {
+      position: absolute;
+      z-index: 99999;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.4s;
+    }
 
-      to {
-        opacity: 1;
+    .ai-transition-layer.show {
+      opacity: 1;
+    }
+
+    .ai-core-loader {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: #F59E0B;
+      border-bottom-color: #F59E0B;
+      animation: spinAI 1s linear infinite;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+    }
+
+    @keyframes spinAI {
+      100% {
+        transform: rotate(360deg) scale(1.2);
+        filter: hue-rotate(20deg);
       }
+    }
+
+    .ai-trans-text {
+      font-size: 14px;
+      color: #F59E0B;
+      letter-spacing: 3px;
+      font-weight: 600;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
     }
 
     /* HERO SECTION CSS */
@@ -764,6 +812,17 @@
       transform: translateX(20px) scale(1.05);
       z-index: 2;
       box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+      animation: selectPulse 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    @keyframes selectPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6);
+      }
+
+      100% {
+        box-shadow: 0 0 0 30px rgba(245, 158, 11, 0);
+      }
     }
 
     .bhk-card.active-card::before {
@@ -1175,41 +1234,75 @@
       animation: fadeIn 0.5s forwards;
     }
 
-    .scan-line {
-      width: 2px;
-      height: 100px;
-      background: #F59E0B;
-      box-shadow: 0 0 20px #F59E0B, 0 0 40px #F59E0B;
-      animation: scanLeftRight 1.5s ease-in-out infinite alternate;
+    .scan-beam {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 15%;
+      background: linear-gradient(transparent, rgba(245, 158, 11, 0.4) 50%, #F59E0B 90%, transparent);
+      animation: scanDown 2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
     }
 
-    @keyframes scanLeftRight {
+    @keyframes scanDown {
       0% {
-        transform: translateX(-150px);
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+
+      50% {
+        opacity: 1;
       }
 
       100% {
-        transform: translateX(150px);
+        transform: translateY(100vh);
+        opacity: 0;
+      }
+    }
+
+    .data-particles {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background-image: radial-gradient(circle, rgba(245, 158, 11, 0.15) 1px, transparent 1px);
+      background-size: 30px 30px;
+      animation: dataFloat 10s linear infinite;
+      z-index: -1;
+    }
+
+    @keyframes dataFloat {
+      0% {
+        transform: translateY(0);
+      }
+
+      100% {
+        transform: translateY(-300px);
       }
     }
 
     .loading-text {
-      margin-top: 30px;
-      font-size: 20px;
-      font-weight: 300;
-      letter-spacing: 4px;
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: 400;
+      letter-spacing: 6px;
       color: #F59E0B;
-      animation: pulseText 1s infinite alternate;
+      animation: pulseText 0.8s infinite alternate;
+      text-transform: uppercase;
     }
 
     @keyframes pulseText {
       from {
-        opacity: 0.5;
+        opacity: 0.4;
+        filter: blur(1px);
       }
 
       to {
         opacity: 1;
-        text-shadow: 0 0 10px #F59E0B;
+        text-shadow: 0 0 15px #F59E0B;
+        filter: blur(0px);
       }
     }
 
@@ -1233,6 +1326,85 @@
         transform: scale(1);
         filter: brightness(1.2);
         text-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+      }
+    }
+
+    @keyframes shakeVibrate {
+      0% {
+        transform: translateY(0) translate(2px, 1px) rotate(0deg);
+      }
+
+      10% {
+        transform: translateY(0) translate(-1px, -2px) rotate(-1deg);
+      }
+
+      20% {
+        transform: translateY(0) translate(-3px, 0px) rotate(1deg);
+      }
+
+      30% {
+        transform: translateY(0) translate(0px, 2px) rotate(0deg);
+      }
+
+      40% {
+        transform: translateY(0) translate(1px, -1px) rotate(1deg);
+      }
+
+      50% {
+        transform: translateY(0) translate(-1px, 2px) rotate(-1deg);
+      }
+
+      60% {
+        transform: translateY(0) translate(-3px, 1px) rotate(0deg);
+      }
+
+      70% {
+        transform: translateY(0) translate(2px, 1px) rotate(-1deg);
+      }
+
+      80% {
+        transform: translateY(0) translate(-1px, -1px) rotate(1deg);
+      }
+
+      90% {
+        transform: translateY(0) translate(2px, 2px) rotate(0deg);
+      }
+
+      100% {
+        transform: translateY(0) translate(0px, 0px) rotate(0deg);
+      }
+    }
+
+    .shake-vibrate {
+      animation: shakeVibrate 0.6s cubic-bezier(.36, .07, .19, .97) both;
+    }
+
+    .glow-burst {
+      position: absolute;
+      z-index: -1;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.6) 0%, transparent 70%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .pulse-burst {
+      animation: burstFire 1.5s ease-out forwards;
+    }
+
+    @keyframes burstFire {
+      0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
       }
     }
 
@@ -1304,6 +1476,11 @@
 
 <body>
 
+  <div class="ai-transition-layer" id="ai-transition">
+    <div class="ai-core-loader"></div>
+    <div class="ai-trans-text" id="ai-trans-text">Processing...</div>
+  </div>
+
   <!-- HERO -->
   <div class="screen active hero-screen">
     <div class="cinematic-bg"></div>
@@ -1312,7 +1489,7 @@
       <h1 class="hero-title">Welcome to Your Dream Home Journey</h1>
       <p class="hero-subtext">Design, explore, and build your perfect living space effortlessly.</p>
       <div class="cta-group">
-        <button class="primary-btn" onclick="next()">Get Started</button>
+        <button class="primary-btn" onclick="next('Scanning cartography networks...')">Get Started</button>
         <button class="secondary-btn">Explore Designs</button>
       </div>
     </div>
@@ -1508,10 +1685,38 @@
     let S = { location: "", sqft: 1000, bhk: 2, floor: 1 };
     let locations = [];
 
-    function next() {
-      screens[current].classList.remove("active");
-      current++;
-      screens[current].classList.add("active");
+    function next(textStr = null) {
+      if (textStr && current < screens.length - 1) {
+        document.getElementById("ai-trans-text").innerText = textStr;
+        document.getElementById("ai-transition").classList.add("show");
+        screens[current].classList.remove("active");
+
+        setTimeout(() => {
+          document.getElementById("ai-transition").classList.remove("show");
+          current++;
+          screens[current].classList.add("active");
+        }, 900);
+      } else {
+        screens[current].classList.remove("active");
+        current++;
+        screens[current].classList.add("active");
+      }
+    }
+
+    // 3D Physics Tilting Engine
+    function tiltBuilding(e) {
+      let box = document.getElementById("bhk-stack");
+      if (!box) return;
+      let rect = box.getBoundingClientRect();
+      let x = e.clientX - rect.left - rect.width / 2;
+      let y = e.clientY - rect.top - rect.height / 2;
+      let rotateY = (x / rect.width) * 15;
+      let rotateX = -(y / rect.height) * 15;
+      box.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    }
+    function resetTilt() {
+      let box = document.getElementById("bhk-stack");
+      if (box) box.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
     }
 
     let mapInstance;
@@ -1529,7 +1734,7 @@
 
       // Initialize Map
       mapInstance = L.map('map', { zoomControl: false, attributionControl: false }).setView([13.0, 77.6], 11);
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         subdomains: 'abcd',
         maxZoom: 19
       }).addTo(mapInstance);
@@ -1577,11 +1782,21 @@
         }
       });
 
+      // Inject Stack Physics Wrapper for 3D UI
+      let stack = document.querySelector(".bhk-cards-container");
+      let stackWrap = document.createElement("div");
+      stackWrap.id = "bhk-stack";
+      stackWrap.style.transition = "transform 0.1s ease-out";
+      stack.parentNode.insertBefore(stackWrap, stack);
+      stackWrap.appendChild(stack);
+      document.getElementById('layout-step').addEventListener('mousemove', tiltBuilding);
+      document.getElementById('layout-step').addEventListener('mouseleave', resetTilt);
+
       // Ensure map renders correctly when screen becomes active
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.target.classList.contains('active')) {
-            setTimeout(() => mapInstance.invalidateSize(), 150);
+            setTimeout(() => mapInstance.invalidateSize(), 500); // 500ms allows flow-through scale transform to complete!
           }
         });
       });
@@ -1611,8 +1826,8 @@
 
     function confirmLocation() {
       document.getElementById('location-panel').classList.remove('open');
-      next();
-      setTimeout(() => updateSqftVisuals(), 100);
+      next('Formulating spatial arrays...');
+      setTimeout(() => updateSqftVisuals(), 1000);
     }
 
     function updateSqftVisuals() {
@@ -1638,7 +1853,12 @@
       cube.style.setProperty('--cd', `${cd}px`);
       cube.style.setProperty('--ch', `${ch}px`);
 
-      let percentage = ((val - 500) / 4500) * 100;
+      // Simulated Scaffold Construction Overlay
+      let prcnt = (val - 500) / 4500;
+      let alphaGrid = 0.2 + (prcnt * 0.6);
+      document.querySelector('.cube-face.top').style.backgroundImage = `linear-gradient(rgba(245, 158, 11, ${alphaGrid}) 1px, transparent 1px), linear-gradient(90deg, rgba(245, 158, 11, ${alphaGrid}) 1px, transparent 1px)`;
+
+      let percentage = prcnt * 100;
       document.getElementById("sqft-slider").style.background = `linear-gradient(90deg, #F59E0B ${percentage}%, rgba(255,255,255,0.1) ${percentage}%)`;
 
       document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
@@ -1653,7 +1873,7 @@
     }
 
     function confirmSqft() {
-      next();
+      next('Building architectural cross-sections...');
     }
 
     function selectBhk(bhk) {
@@ -1778,32 +1998,54 @@
       let c = p * 0.4;
       let el = document.getElementById("price");
       el.classList.remove("locked");
+      let dash = document.getElementById("final-dashboard");
+
+      // Inject Burst Explosion for Phase 3 Impact!
+      let burst = document.createElement("div");
+      burst.className = "glow-burst";
+      dash.prepend(burst);
 
       let start = performance.now();
-      let duration = 2400;
+      let duration = 3000;
 
       function step(now) {
         let t = (now - start) / duration;
         if (t > 1) t = 1;
-        // EaseOutQuart Slot-Machine Equation
-        let ease = 1 - Math.pow(1 - t, 4);
+
+        // Phase 2 Slot Machine Heavy Spin Easing (EaseOutQuart)
+        let ease = 1 - Math.pow(1 - t, 5);
         let curr = c + (p - c) * ease;
+
+        // Visual Velocity Blur
+        let blurAmt = Math.max(0, 8 * (1 - ease * 1.05));
+        el.style.filter = `blur(${blurAmt}px)`;
 
         el.innerText = "₹ " + Math.round(curr).toLocaleString('en-IN') + " L";
 
         if (t < 1) requestAnimationFrame(step);
         else {
+          el.style.filter = "blur(0px)";
           el.innerText = "₹ " + Math.round(p).toLocaleString('en-IN') + " L";
           el.classList.add("locked");
 
-          // Trigger Insights Sliding Fade Animation
-          document.querySelectorAll('.insight-row').forEach(row => row.classList.add('show'));
-          // Set deterministic random bars relative to values configured
+          // Phase 3 Impact Shake!
+          dash.classList.add("shake-vibrate");
+          burst.classList.add("pulse-burst");
+
+          // Phase 4 Trigger Insights Staggered Cascade
           setTimeout(() => {
-            document.getElementById("bar-loc").style.width = Math.min(100, (p / 200) * 100 + 30) + "%";
-            document.getElementById("bar-sqft").style.width = Math.min(100, (S.sqft / 4000) * 100 + 20) + "%";
-            document.getElementById("bar-lay").style.width = Math.min(100, (S.bhk / 5) * 100) + "%";
-          }, 400);
+            document.querySelectorAll('.insight-row').forEach((row, idx) => {
+              row.style.animationDelay = (0.2 + idx * 0.3) + "s";
+              row.classList.add('show');
+            });
+
+            // Set deterministic random bars relative to values configured
+            setTimeout(() => {
+              document.getElementById("bar-loc").style.width = Math.min(100, (p / 200) * 100 + 30) + "%";
+              document.getElementById("bar-sqft").style.width = Math.min(100, (S.sqft / 4000) * 100 + 20) + "%";
+              document.getElementById("bar-lay").style.width = Math.min(100, (S.bhk / 5) * 100) + "%";
+            }, 500);
+          }, 200);
         }
       }
       requestAnimationFrame(step);
