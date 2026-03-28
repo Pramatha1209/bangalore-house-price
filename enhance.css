@@ -1,0 +1,67 @@
+/* 🌌 Premium Background */
+body {
+  background: linear-gradient(135deg, #fdfcfb, #e2d1c3);
+  font-family: 'Poppins', sans-serif;
+}
+
+/* 🏢 Building 3D Effect */
+#building {
+  transform-style: preserve-3d;
+  transition: transform 0.2s ease;
+}
+
+/* ✨ Floor Glow */
+.floor {
+  background: linear-gradient(145deg, #ffffff, #e6e6e6);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: 0.3s;
+}
+
+.floor:hover {
+  transform: scale(1.08);
+  box-shadow: 
+    0 10px 30px rgba(0,0,0,0.2),
+    0 0 20px rgba(255, 200, 0, 0.6);
+}
+
+/* 🎬 Smooth Entry */
+.floor-view {
+  backdrop-filter: blur(20px);
+  background: rgba(255,255,255,0.3);
+  border-radius: 20px;
+  animation: zoomIn 0.6s ease;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.4) translateY(100px);
+    opacity: 0;
+    filter: blur(10px);
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* 💧 Ripple Upgrade */
+.ripple {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, rgba(59,130,246,0.6) 20%, transparent 70%);
+  border-radius: 50%;
+  animation: rippleEffect 0.8s ease-out;
+}
+
+@keyframes rippleEffect {
+  from {
+    transform: scale(0);
+    opacity: 1;
+  }
+  to {
+    transform: scale(6);
+    opacity: 0;
+  }
+}
