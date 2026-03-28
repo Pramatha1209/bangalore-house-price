@@ -1008,7 +1008,17 @@
     .bp-room.bath {
       grid-column: span 1;
       grid-row: span 1;
-      border: 1px solid rgba(14, 165, 233, 0.4);
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .bp-room.bath.inactive .room-text {
+      opacity: 0.3;
+    }
+
+    .bp-room.bath:hover {
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .bp-room.bath.room-activate {
@@ -1020,8 +1030,9 @@
     .bp-room.bath.activated {
       background: rgba(14, 165, 233, 0.15);
       box-shadow: inset 0 0 20px rgba(14, 165, 233, 0.4);
-      color: #38BDF8;
+      color: #fff;
       border: 1px solid #0EA5E9;
+      font-weight: 700;
     }
 
     .bp-room.bath.deactivating {
@@ -1726,17 +1737,16 @@
       <div class="blueprint-glow-sweep"></div>
     </div>
 
-    <div class="bath-dashboard glass-panel-sm" id="bath-dashboard">
-      <div class="bath-controls">
-        <h3>Bathrooms</h3>
-        <div class="counter">
-          <button class="circle-btn" onclick="updateBaths(-1)">−</button>
-          <span id="bath-count">1</span>
-          <button class="circle-btn" onclick="updateBaths(1)">+</button>
-        </div>
+    <div class="bath-dashboard glass-panel-sm" id="bath-dashboard" style="text-align: center;">
+      <h3
+        style="font-size: 14px; color: #ccc; font-weight: 400; margin-bottom: 5px; letter-spacing: 1px; text-transform: uppercase;">
+        Tap Blueprint Grid to Activate Plumbing</h3>
+      <div style="font-size: 24px; color: #FDE68A; font-weight: bold; margin-bottom: 5px;">
+        Active Plumbing: <span id="bath-count">1</span>
       </div>
 
-      <p class="bath-hint" id="bath-hint">Standard config | Recommended for 1-2 people.</p>
+      <p class="bath-hint" id="bath-hint" style="margin-top: 5px; margin-bottom: 15px;">Standard config | Recommended
+        for 1-2 people.</p>
       <button class="primary-btn full-width" onclick="predict()">Calculate Final Price</button>
     </div>
   </div>
@@ -2030,21 +2040,14 @@
 
       if (S.floor > bhk + 1) S.floor = bhk;
       if (S.floor < 1) S.floor = 1;
+
+      document.getElementById("blueprint-grid").innerHTML = ""; // Force clean rebuild
       updateBathVisuals();
     }
 
-    function updateBaths(change) {
-      let newBath = S.floor + change;
-      if (newBath < 1) return;
+    // Purged traditional `updateBaths`. Replaced by purely contextual Room Activation.
 
-      if (S.bhk == 1 && newBath > 2) { showBathWarning("Too many bathrooms for a 1BHK!"); return; }
-      if (S.bhk == 2 && newBath > 3) { showBathWarning("Unusual layout: Max 3 baths for 2BHK."); return; }
-      if (S.bhk == 3 && newBath > 4) { showBathWarning("Unusual luxury config constraint."); return; }
-      if (newBath > 6) { showBathWarning("Max architectural limit reached."); return; }
-
-      S.floor = newBath;
-      updateBathVisuals();
-    }
+    // Legacy bounds removed. Handled inside toggleBath().
 
     function showBathWarning(msg) {
       let hint = document.getElementById("bath-hint");
@@ -2064,39 +2067,71 @@
       else hint.innerText = "High-availability layout.";
 
       let grid = document.getElementById("blueprint-grid");
-      let existingBaths = grid.querySelectorAll(".bp-room.bath").length;
 
+      // Generate the max possible rooms if grid is empty
       if (grid.innerHTML === "") {
         grid.innerHTML += `<div class="bp-room hall">HALL</div>`;
         grid.innerHTML += `<div class="bp-room kitchen">KITCHEN</div>`;
         for (let i = 1; i <= S.bhk; i++) {
           grid.innerHTML += `<div class="bp-room bed">BED ${i}</div>`;
         }
-      }
 
-      while (existingBaths < S.floor) {
-        let newBath = document.createElement("div");
-        newBath.className = "bp-room bath room-activate";
-        newBath.innerHTML = `<span class="room-text">BATH ${existingBaths + 1}</span><div class="water-ripple"></div>`;
-        grid.appendChild(newBath);
+        let maxBaths = Math.min(6, S.bhk + 2);
 
-        setTimeout(() => {
-          let r = newBath.querySelector('.water-ripple');
-          if (r) r.classList.add('fire-ripple');
-          newBath.classList.add('activated');
-        }, 50);
-        existingBaths++;
-      }
+        for (let i = 1; i <= maxBaths; i++) {
+          let newBath = document.createElement("div");
 
-      if (existingBaths > S.floor) {
-        let allBaths = grid.querySelectorAll(".bp-room.bath");
-        for (let i = existingBaths - 1; i >= S.floor; i--) {
-          let targetNode = allBaths[i];
-          targetNode.classList.remove('activated');
-          targetNode.classList.add('deactivating');
-          setTimeout(() => targetNode.remove(), 400);
+          if (i <= S.floor) {
+            newBath.className = "bp-room bath room-activate activated";
+            newBath.innerHTML = `<span class="room-text">BATH ${i}</span><div class="water-ripple fire-ripple"></div>`;
+          } else {
+            newBath.className = "bp-room bath inactive";
+            newBath.innerHTML = `<span class="room-text">BATH ${i}</span><div class="water-ripple"></div>`;
+          }
+
+          newBath.onclick = function () { toggleBath(this); };
+          grid.appendChild(newBath);
         }
       }
+    }
+
+    function toggleBath(element) {
+      if (element.classList.contains('activated')) {
+        if (S.floor <= 1) { showBathWarning("Minimum 1 plumbing active limit."); return; }
+
+        element.classList.remove('activated');
+        element.classList.add('inactive');
+        element.classList.add('deactivating');
+
+        let r = element.querySelector('.water-ripple');
+        if (r) r.classList.remove('fire-ripple');
+
+        setTimeout(() => element.classList.remove('deactivating'), 400);
+        S.floor--;
+
+      } else {
+        if (S.bhk == 1 && S.floor >= 2) { showBathWarning("Max 2 baths for 1BHK."); return; }
+        if (S.bhk == 2 && S.floor >= 3) { showBathWarning("Max 3 baths for 2BHK."); return; }
+        if (S.bhk == 3 && S.floor >= 4) { showBathWarning("Unusual luxury config constraint."); return; }
+        if (S.floor >= 6) { showBathWarning("Max architectural limit reached."); return; }
+
+        element.classList.remove('inactive');
+        element.classList.remove('deactivating');
+
+        setTimeout(() => {
+          let r = element.querySelector('.water-ripple');
+          if (r) {
+            r.classList.remove('fire-ripple');
+            void r.offsetWidth;
+            r.classList.add('fire-ripple');
+          }
+          element.classList.add('activated');
+        }, 10);
+
+        S.floor++;
+      }
+
+      updateBathVisuals();
     }
 
     function setHeatmap(mode) {
