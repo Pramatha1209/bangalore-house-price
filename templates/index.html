@@ -352,13 +352,18 @@
     }
 
     .map-overlay-top {
-      position: absolute;
-      top: 40px;
-      left: 50%;
-      transform: translateX(-50%);
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
       z-index: 1000;
-      width: 90%;
-      max-width: 500px;
+      width: 320px;
+      max-width: calc(100vw - 40px);
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    
+    .map-overlay-top:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);
     }
 
     .glass-panel-sm {
@@ -371,9 +376,9 @@
     }
 
     .search-container {
-      padding: 10px 20px;
+      padding: 12px 20px;
       display: flex;
-      flex-direction: column;
+      flex-direction: column-reverse; /* Reverses order so dropdown goes UP */
     }
 
     #location-search {
@@ -390,9 +395,18 @@
       max-height: 200px;
       overflow-y: auto;
       display: none;
-      margin-top: 10px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding-top: 10px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 12px;
+    }
+    
+    /* Scrollbar styling for a cleaner look */
+    .autocomplete-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    .autocomplete-list::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
     }
 
     .autocomplete-list div {
