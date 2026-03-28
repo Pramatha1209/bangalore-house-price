@@ -1616,20 +1616,19 @@
     /* GLOBAL SUMMARY BAR */
     .global-summary-bar {
       position: fixed;
-      top: -100px;
-      left: 50%;
-      transform: translateX(-50%);
+      bottom: -100px;
+      left: 20px;
       background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      border-radius: 30px;
-      padding: 12px 24px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 16px;
+      padding: 12px 20px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 15px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      justify-content: flex-start;
+      gap: 12px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
       z-index: 9999;
       color: #334155;
       font-size: 14px;
@@ -1637,11 +1636,18 @@
       transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
       opacity: 0;
       pointer-events: none;
+      max-width: calc(100vw - 40px);
+    }
+    
+    .global-summary-bar:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 35px rgba(245, 158, 11, 0.25);
     }
 
     .global-summary-bar.visible {
       opacity: 1;
-      top: 20px;
+      bottom: 20px;
+      pointer-events: auto;
     }
 
     .summary-item {
@@ -1654,24 +1660,22 @@
     .summary-item.highlight {
       color: #D97706;
       transform: scale(1.15);
-      text-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+      text-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
     }
 
     .summary-divider {
-      color: #CBD5E1;
+      color: #94A3B8;
       font-weight: 300;
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 800px) {
       .global-summary-bar {
         flex-wrap: wrap;
-        width: 90%;
-        border-radius: 16px;
-        padding: 10px;
-        gap: 10px;
-      }
-      .global-summary-bar.visible {
-        top: 10px;
+        padding: 12px;
+        gap: 8px;
+        font-size: 13px;
+        border-radius: 12px;
+        justify-content: center;
       }
     }
 
