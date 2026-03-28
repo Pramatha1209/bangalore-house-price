@@ -753,30 +753,53 @@
       color: #F59E0B;
     }
 
-    .preset-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 25px;
+    .plot-size-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
     }
 
-    .preset-btn {
+    .plot-card {
       background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #ccc;
-      padding: 8px 20px;
-      border-radius: 20px;
-      font-family: inherit;
-      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 12px 0;
       cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .plot-card:hover {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.6);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.1);
+    }
+
+    .plot-card.active-plot {
+      background: rgba(245, 158, 11, 0.25);
+      border-color: #F59E0B;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .plot-dim {
+      font-size: 15px;
+      font-weight: 600;
+      color: #CBD5E1;
       transition: 0.3s;
     }
 
-    .preset-btn:hover,
-    .preset-btn.active {
-      background: rgba(245, 158, 11, 0.2);
-      border-color: #F59E0B;
-      color: #fff;
+    .plot-card.active-plot .plot-dim {
+      color: #FDE68A;
+    }
+
+    @media (max-width: 500px) {
+      .plot-size-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
 
     .bottom-cta {
@@ -1763,10 +1786,22 @@
         </div>
       </div>
 
-      <div class="preset-buttons">
-        <button class="preset-btn" onclick="setSqft(600)">Compact</button>
-        <button class="preset-btn active" onclick="setSqft(1200)" id="preset-family">Family</button>
-        <button class="preset-btn" onclick="setSqft(2500)" id="preset-luxury">Luxury</button>
+      <div style="margin-top: 25px;">
+        <p style="font-size: 14px; margin-bottom: 12px; color: #94A3B8; font-weight: 500;">Choose a standard plot size or adjust manually</p>
+        <div class="plot-size-grid">
+          <div class="plot-card active-plot" id="plot-1200" onclick="setSqft(1200)">
+            <span class="plot-dim">30 × 40</span>
+          </div>
+          <div class="plot-card" id="plot-1500" onclick="setSqft(1500)">
+            <span class="plot-dim">30 × 50</span>
+          </div>
+          <div class="plot-card" id="plot-2400" onclick="setSqft(2400)">
+            <span class="plot-dim">40 × 60</span>
+          </div>
+          <div class="plot-card" id="plot-4000" onclick="setSqft(4000)">
+            <span class="plot-dim">50 × 80</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2080,10 +2115,13 @@
       let percentage = prcnt * 100;
       document.getElementById("sqft-slider").style.background = `linear-gradient(90deg, #F59E0B ${percentage}%, rgba(255,255,255,0.1) ${percentage}%)`;
 
-      document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
-      if (val <= 800) document.querySelectorAll('.preset-btn')[0].classList.add('active');
-      else if (val > 800 && val <= 1800) document.querySelectorAll('.preset-btn')[1].classList.add('active');
-      else document.querySelectorAll('.preset-btn')[2].classList.add('active');
+      document.querySelectorAll('.plot-card').forEach(btn => btn.classList.remove('active-plot'));
+      
+      // Auto-highlight exact matches based on manually moving slider
+      if (val == 1200) { let p = document.getElementById('plot-1200'); if(p) p.classList.add('active-plot'); }
+      else if (val == 1500) { let p = document.getElementById('plot-1500'); if(p) p.classList.add('active-plot'); }
+      else if (val == 2400) { let p = document.getElementById('plot-2400'); if(p) p.classList.add('active-plot'); }
+      else if (val == 4000) { let p = document.getElementById('plot-4000'); if(p) p.classList.add('active-plot'); }
     }
 
     function setSqft(val) {
