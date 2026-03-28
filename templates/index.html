@@ -930,19 +930,67 @@
       text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
     }
 
-    .blueprint-container {
+    /* SPLIT SCREEN WRAPPER */
+    .split-layout-wrapper {
       position: absolute;
-      top: 55%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.9);
-      width: 80%;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      padding-top: 120px; /* Space for the top header */
+      box-sizing: border-box;
+      z-index: 5;
+    }
+
+    .split-left {
+      flex: 6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      position: relative;
+    }
+
+    .split-right {
+      flex: 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding-left: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .split-layout-wrapper {
+        flex-direction: column;
+        padding: 20px;
+        padding-top: 100px; 
+      }
+      .split-left, .split-right {
+        width: 100%;
+        flex: auto;
+        padding-left: 0;
+      }
+      .split-right {
+        margin-top: 20px;
+      }
+    }
+
+    .blueprint-container {
+      width: 100%;
       max-width: 600px;
       height: 350px;
-      background: rgba(10, 25, 40, 0.5);
-      border: 2px solid rgba(59, 130, 246, 0.3);
+      background: rgba(15, 25, 40, 0.9);
+      border: 2px solid rgba(59, 130, 246, 0.5);
       border-radius: 12px;
       opacity: 0;
       pointer-events: none;
+      transform: scale(0.85); /* Pure scaling, no translating */
       transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
       overflow: hidden;
       box-shadow: 0 0 50px rgba(59, 130, 246, 0.15) inset;
@@ -950,7 +998,7 @@
 
     .blueprint-container.visible {
       opacity: 1;
-      transform: translate(-50%, -45%) scale(1);
+      transform: scale(1);
       pointer-events: auto;
     }
 
@@ -1122,24 +1170,20 @@
     }
 
     .bath-dashboard {
-      position: absolute;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      max-width: 600px;
-      padding: 25px 30px;
+      width: 100%;
+      max-width: 480px;
+      padding: 30px 35px;
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.8);
       border-radius: 20px;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
       text-align: center;
-      display: none;
+      display: flex; /* Natural flow in flex container */
       flex-direction: column;
-      gap: 10px;
-      animation: slideUp 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      gap: 15px;
+      animation: slideUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
     
     .bath-dashboard h3 {
@@ -1754,25 +1798,36 @@
       </div>
     </div>
 
-    <div class="blueprint-container" id="blueprint">
-      <div class="blueprint-grid" id="blueprint-grid">
-        <!-- Generated visually via JS -->
-      </div>
-      <div class="blueprint-glow-sweep"></div>
-    </div>
-
-    <div class="bath-dashboard" id="bath-dashboard" style="display: none;">
-      <h3>Select Bathrooms</h3>
+    <!-- SPLIT LAYOUT WRAPPER -->
+    <div class="split-layout-wrapper" id="split-layout" style="display: none; opacity: 0; transition: opacity 0.8s;">
       
-      <div class="bath-selector-grid">
-        <button class="bath-option" id="bath-btn-1" onclick="setBathCount(1)">1 Bath</button>
-        <button class="bath-option active-bath" id="bath-btn-2" onclick="setBathCount(2)">2 Baths</button>
-        <button class="bath-option" id="bath-btn-3" onclick="setBathCount(3)">3 Baths</button>
-        <button class="bath-option" id="bath-btn-4" onclick="setBathCount(4)">4+ Baths</button>
+      <!-- LEFT SIDE: Floor Plan Graphic -->
+      <div class="split-left">
+        <div class="blueprint-container" id="blueprint">
+          <div class="blueprint-grid" id="blueprint-grid">
+            <!-- Generated visually via JS -->
+          </div>
+          <div class="blueprint-glow-sweep"></div>
+        </div>
       </div>
 
-      <p class="bath-hint" id="bath-hint">Standard config | Recommended for 1-2 people.</p>
-      <button class="primary-btn full-width" onclick="predict()" style="margin: 0; padding: 16px;">Calculate Final Price</button>
+      <!-- RIGHT SIDE: Controls Graphic -->
+      <div class="split-right">
+        <div class="bath-dashboard" id="bath-dashboard">
+          <h3>Select Bathrooms</h3>
+          
+          <div class="bath-selector-grid">
+            <button class="bath-option" id="bath-btn-1" onclick="setBathCount(1)">1 Bath</button>
+            <button class="bath-option active-bath" id="bath-btn-2" onclick="setBathCount(2)">2 Baths</button>
+            <button class="bath-option" id="bath-btn-3" onclick="setBathCount(3)">3 Baths</button>
+            <button class="bath-option" id="bath-btn-4" onclick="setBathCount(4)">4+ Baths</button>
+          </div>
+
+          <p class="bath-hint" id="bath-hint">Standard config | Recommended for 1-2 people.</p>
+          <button class="primary-btn full-width" onclick="predict()" style="margin: 0; padding: 16px;">Calculate Final Price</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -2064,8 +2119,14 @@
 
       setTimeout(() => {
         container.style.display = 'none';
+        
+        // Show split container
+        let splitLayout = document.getElementById('split-layout');
+        splitLayout.style.display = 'flex';
+        void splitLayout.offsetWidth; // Trigger reflow for transition
+        splitLayout.style.opacity = '1';
+
         document.getElementById('blueprint').classList.add('visible');
-        document.getElementById('bath-dashboard').style.display = 'flex';
       }, 1000);
 
       if (S.floor > bhk + 1) S.floor = bhk;
