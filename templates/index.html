@@ -68,21 +68,53 @@
       opacity: 1;
     }
 
-    .ai-core-loader {
-      width: 40px;
+    .data-motion-loader {
+      display: flex;
+      gap: 6px;
       height: 40px;
-      border-radius: 50%;
-      border: 2px solid transparent;
-      border-top-color: #F59E0B;
-      border-bottom-color: #F59E0B;
-      animation: spinAI 1s linear infinite;
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+      align-items: center;
     }
 
-    @keyframes spinAI {
+    .data-motion-loader div {
+      width: 4px;
+      height: 10px;
+      background: #F59E0B;
+      border-radius: 2px;
+      box-shadow: 0 0 10px #F59E0B;
+      animation: dataLine 0.6s cubic-bezier(0.25, 1, 0.5, 1) infinite alternate;
+    }
+
+    .data-motion-loader div:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .data-motion-loader div:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .data-motion-loader div:nth-child(3) {
+      animation-delay: 0.2s;
+    }
+
+    .data-motion-loader div:nth-child(4) {
+      animation-delay: 0.3s;
+    }
+
+    .data-motion-loader div:nth-child(5) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes dataLine {
+      0% {
+        height: 10px;
+        opacity: 0.5;
+      }
+
       100% {
-        transform: rotate(360deg) scale(1.2);
-        filter: hue-rotate(20deg);
+        height: 40px;
+        background: #FDE68A;
+        opacity: 1;
+        box-shadow: 0 0 20px #FDE68A;
       }
     }
 
@@ -537,6 +569,17 @@
         linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
       background-size: 40px 40px;
+      animation: gridMove 20s linear infinite;
+    }
+
+    @keyframes gridMove {
+      0% {
+        background-position: 0 0;
+      }
+
+      100% {
+        background-position: 40px 40px;
+      }
     }
 
     .sqft-header {
@@ -1552,7 +1595,13 @@
 <body>
 
   <div class="ai-transition-layer" id="ai-transition">
-    <div class="ai-core-loader"></div>
+    <div class="data-motion-loader">
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
     <div class="ai-trans-text" id="ai-trans-text">Processing...</div>
   </div>
 
@@ -2102,7 +2151,7 @@
 
       next('Synthesizing interior floorplan...');
 
-      let loader = document.getElementById("loading-overlay");
+      let loader = document.getElementById("ai-transition");
       let dash = document.getElementById("final-dashboard");
       loader.classList.add("active");
       dash.style.opacity = "0";
