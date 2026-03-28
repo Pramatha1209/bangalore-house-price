@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Building Interaction</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: linear-gradient(to bottom, #dbeafe, #e5e7eb);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .building {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .floor {
+      width: 200px;
+      height: 50px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .floor:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    .floor-view {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      animation: zoomIn 0.5s ease;
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .rooms {
+      display: grid;
+      grid-template-columns: repeat(2, 100px);
+      gap: 10px;
+    }
+
+    .room {
+      width: 100px;
+      height: 100px;
+      background: #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .ripple {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: rgba(59,130,246,0.5);
+      border-radius: 50%;
+      animation: rippleEffect 0.6s ease-out;
+    }
+
+    @keyframes rippleEffect {
+      from { transform: scale(0); opacity: 1; }
+      to { transform: scale(5); opacity: 0; }
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      border: none;
+      background: black;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="building" class="building"></div>
+
+<div id="floorView" class="floor-view">
+  <h2 id="floorTitle"></h2>
+  <div class="rooms" id="rooms"></div>
+  <p id="bathCount">Bathrooms: 0</p>
+  <button onclick="goBack()">Back</button>
+</div>
+
+<script>
+  const building = document.getElementById("building");
+  const floorView = document.getElementById("floorView");
+  const floorTitle = document.getElementById("floorTitle");
+  const roomsContainer = document.getElementById("rooms");
+  const bathCount = document.getElementById("bathCount");
+
+  let bathrooms = 0;
+
+  // Create floors
+  for (let i = 1; i <= 5; i++) {
+    const floor = document.createElement("div");
+    floor.className = "floor";
+    floor.innerText = `Floor ${i} (${i} BHK)`;
+
+    floor.onclick = () => enterFloor(i);
+
+    building.appendChild(floor);
+  }
+
+  function enterFloor(floor) {
+    building.style.display = "none";
+    floorView.style.display = "flex";
+
+    floorTitle.innerText = `Floor ${floor} Layout`;
+    bathrooms = 0;
+    updateBath();
+
+    roomsContainer.innerHTML = "";
+
+    for (let i = 1; i <= 4; i++) {
+      const room = document.createElement("div");
+      room.className = "room";
+      room.innerText = "Room";
+
+      room.onclick = (e) => addBathroom(e, room);
+
+      roomsContainer.appendChild(room);
+    }
+  }
+
+  function addBathroom(e, room) {
+    bathrooms++;
+    updateBath();
+
+    const ripple = document.createElement("span");
+    ripple.className = "ripple";
+
+    ripple.style.left = e.offsetX + "px";
+    ripple.style.top = e.offsetY + "px";
+
+    room.appendChild(ripple);
+
+    setTimeout(() => ripple.remove(), 600);
+  }
+
+  function updateBath() {
+    bathCount.innerText = "Bathrooms: " + bathrooms;
+  }
+
+  function goBack() {
+    floorView.style.display = "none";
+    building.style.display = "flex";
+  }
+</script>
+
+</body>
+</html>
