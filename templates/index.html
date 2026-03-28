@@ -1123,68 +1123,77 @@
 
     .bath-dashboard {
       position: absolute;
-      bottom: 30px;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
       width: 90%;
-      max-width: 400px;
-      padding: 20px 30px;
+      max-width: 600px;
+      padding: 25px 30px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
       text-align: center;
       display: none;
       flex-direction: column;
-      gap: 15px;
-      animation: fade 0.5s ease forwards;
+      gap: 10px;
+      animation: slideUp 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     }
-
-    .bath-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .bath-controls h3 {
-      margin: 0;
+    
+    .bath-dashboard h3 {
       font-size: 20px;
-      color: #FDE68A;
+      color: #1E293B;
+      font-weight: 700;
+      margin: 0 0 5px 0;
     }
-
-    .counter {
+    
+    .bath-selector-grid {
       display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .circle-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: #fff;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      font-size: 24px;
-      line-height: 1;
-      display: flex;
-      align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: 0.2s;
-      padding: 0;
+      gap: 15px;
+      margin: 10px 0;
     }
 
-    .circle-btn:hover {
-      background: #F59E0B;
+    .bath-option {
+      background: rgba(241, 245, 249, 1);
+      border: 1px solid #CBD5E1;
+      color: #334155;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      font-family: inherit;
+      font-size: 16px;
+    }
+
+    .bath-option:hover {
+      background: white;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(245, 158, 11, 0.15);
       border-color: #F59E0B;
-      box-shadow: 0 0 15px #F59E0B;
+    }
+
+    .bath-option.active-bath {
+      background: linear-gradient(135deg, #F59E0B, #D97706);
+      color: white;
+      border-color: #F59E0B;
+      box-shadow: 0 12px 30px rgba(245, 158, 11, 0.4);
+      transform: translateY(-3px) scale(1.05); /* Glow + Scale */
     }
 
     .bath-hint {
       font-size: 14px;
-      color: #aaa;
-      margin: 0;
+      color: #64748B;
+      margin: 0 0 15px 0;
       min-height: 20px;
     }
 
     .bath-hint.warning {
       color: #EF4444;
-      text-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+      font-weight: 600;
     }
 
     @media (max-width: 600px) {
@@ -1752,17 +1761,18 @@
       <div class="blueprint-glow-sweep"></div>
     </div>
 
-    <div class="bath-dashboard glass-panel-sm" id="bath-dashboard" style="text-align: center;">
-      <h3
-        style="font-size: 14px; color: #ccc; font-weight: 400; margin-bottom: 5px; letter-spacing: 1px; text-transform: uppercase;">
-        Tap Blueprint Grid to Activate Plumbing</h3>
-      <div style="font-size: 24px; color: #FDE68A; font-weight: bold; margin-bottom: 5px;">
-        Active Plumbing: <span id="bath-count">1</span>
+    <div class="bath-dashboard" id="bath-dashboard" style="display: none;">
+      <h3>Select Bathrooms</h3>
+      
+      <div class="bath-selector-grid">
+        <button class="bath-option" id="bath-btn-1" onclick="setBathCount(1)">1 Bath</button>
+        <button class="bath-option active-bath" id="bath-btn-2" onclick="setBathCount(2)">2 Baths</button>
+        <button class="bath-option" id="bath-btn-3" onclick="setBathCount(3)">3 Baths</button>
+        <button class="bath-option" id="bath-btn-4" onclick="setBathCount(4)">4+ Baths</button>
       </div>
 
-      <p class="bath-hint" id="bath-hint" style="margin-top: 5px; margin-bottom: 15px;">Standard config | Recommended
-        for 1-2 people.</p>
-      <button class="primary-btn full-width" onclick="predict()">Calculate Final Price</button>
+      <p class="bath-hint" id="bath-hint">Standard config | Recommended for 1-2 people.</p>
+      <button class="primary-btn full-width" onclick="predict()" style="margin: 0; padding: 16px;">Calculate Final Price</button>
     </div>
   </div>
 
@@ -2062,12 +2072,22 @@
       if (S.floor < 1) S.floor = 1;
 
       document.getElementById("blueprint-grid").innerHTML = ""; // Force clean rebuild
-      updateBathVisuals();
+      setBathCount(S.floor);
     }
 
-    // Purged traditional `updateBaths`. Replaced by purely contextual Room Activation.
+    function setBathCount(count) {
+      if (S.bhk == 1 && count > 2) { showBathWarning("Max 2 baths for 1BHK."); count = 2; }
+      if (S.bhk == 2 && count > 3) { showBathWarning("Max 3 baths for 2BHK."); count = 3; }
 
-    // Legacy bounds removed. Handled inside toggleBath().
+      S.floor = count;
+
+      // Update Buttons
+      document.querySelectorAll('.bath-option').forEach(btn => btn.classList.remove('active-bath'));
+      let targetBtn = document.getElementById(`bath-btn-${count > 4 ? 4 : count}`);
+      if(targetBtn) targetBtn.classList.add('active-bath');
+
+      updateBathVisuals();
+    }
 
     function showBathWarning(msg) {
       let hint = document.getElementById("bath-hint");
@@ -2077,7 +2097,6 @@
     }
 
     function updateBathVisuals() {
-      document.getElementById("bath-count").innerText = S.floor;
       let hint = document.getElementById("bath-hint");
       hint.classList.remove('warning');
 
@@ -2100,6 +2119,7 @@
 
         for (let i = 1; i <= maxBaths; i++) {
           let newBath = document.createElement("div");
+          newBath.id = `bath-room-${i}`;
 
           if (i <= S.floor) {
             newBath.className = "bp-room bath room-activate activated";
@@ -2108,50 +2128,31 @@
             newBath.className = "bp-room bath inactive";
             newBath.innerHTML = `<span class="room-text">BATH ${i}</span><div class="water-ripple"></div>`;
           }
-
-          newBath.onclick = function () { toggleBath(this); };
           grid.appendChild(newBath);
         }
-      }
-    }
-
-    function toggleBath(element) {
-      if (element.classList.contains('activated')) {
-        if (S.floor <= 1) { showBathWarning("Minimum 1 plumbing active limit."); return; }
-
-        element.classList.remove('activated');
-        element.classList.add('inactive');
-        element.classList.add('deactivating');
-
-        let r = element.querySelector('.water-ripple');
-        if (r) r.classList.remove('fire-ripple');
-
-        setTimeout(() => element.classList.remove('deactivating'), 400);
-        S.floor--;
-
       } else {
-        if (S.bhk == 1 && S.floor >= 2) { showBathWarning("Max 2 baths for 1BHK."); return; }
-        if (S.bhk == 2 && S.floor >= 3) { showBathWarning("Max 3 baths for 2BHK."); return; }
-        if (S.bhk == 3 && S.floor >= 4) { showBathWarning("Unusual luxury config constraint."); return; }
-        if (S.floor >= 6) { showBathWarning("Max architectural limit reached."); return; }
-
-        element.classList.remove('inactive');
-        element.classList.remove('deactivating');
-
-        setTimeout(() => {
-          let r = element.querySelector('.water-ripple');
-          if (r) {
-            r.classList.remove('fire-ripple');
-            void r.offsetWidth;
-            r.classList.add('fire-ripple');
+        let maxBaths = Math.min(6, S.bhk + 2);
+        for (let i = 1; i <= maxBaths; i++) {
+          let bathDiv = document.getElementById(`bath-room-${i}`);
+          if(!bathDiv) continue;
+          
+          if (i <= S.floor) {
+            if(!bathDiv.classList.contains('activated')) {
+              bathDiv.classList.remove('inactive');
+              bathDiv.classList.add('activated');
+              let ripple = bathDiv.querySelector('.water-ripple');
+              if(ripple) {
+                ripple.classList.remove('fire-ripple');
+                void ripple.offsetWidth;
+                ripple.classList.add('fire-ripple');
+              }
+            }
+          } else {
+            bathDiv.classList.remove('activated');
+            bathDiv.classList.add('inactive');
           }
-          element.classList.add('activated');
-        }, 10);
-
-        S.floor++;
+        }
       }
-
-      updateBathVisuals();
     }
 
     function setHeatmap(mode) {
